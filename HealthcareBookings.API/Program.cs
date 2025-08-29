@@ -1,0 +1,50 @@
+using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Infrastructure.Extensions;
+using HealthcareBookings.Infrastructure.Persistence;
+using HealthcareBookings.Infrastructure.Seeder;
+using Microsoft.AspNetCore.Identity;
+using Resturants.API.Extensions;
+
+public class Program
+{
+    public static async Task Main(string[] args)
+    {
+
+
+	   var builder = WebApplication.CreateBuilder(args);
+
+	   // Add services to the container.
+	   builder.Services.AddInfrastucture(builder.Configuration);
+	   builder.AddPresentation();
+
+	   builder.Services.AddIdentityApiEndpoints<User>()
+		  .AddRoles<IdentityRole>()
+		  .AddEntityFrameworkStores<AppDbContext>();
+
+	   var app = builder.Build();
+
+	   var scope = app.Services.CreateScope();
+	   var seeder = scope.ServiceProvider.GetRequiredService<IAppSeeder>();
+	   await seeder.Seed();
+
+	   // Configure the HTTP request pipeline.
+	   app.UseSwagger();
+	   app.UseSwaggerUI();
+
+	   app.UseHttpsRedirection();
+
+	   /*
+	    * Group identity endpoints provided by the Identity package under "api/identity"
+	    * and add them to the Identity section in swagger UI
+	    */
+	   app.MapGroup("api/identity")
+		  .WithTags("Identity")
+		  .MapIdentityApi<User>();
+
+	   app.UseAuthorization();
+
+	   app.MapControllers();
+
+	   app.Run();
+    }
+}
