@@ -17,7 +17,6 @@ public class Clinic
 public class ClinicAdmin
 {
     public string ClinicAdminUID { get; set; }
-    public User AdminUser { get; set; }
     public string ClinicID { get; set; }
     public Clinic Clinic { get; set; }
 }

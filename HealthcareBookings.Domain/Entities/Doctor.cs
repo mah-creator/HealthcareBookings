@@ -3,7 +3,6 @@
 public class Doctor
 {
     public string DoctorUID { get; set; }
-    public User DoctorUser { get; set; }
     public string? Bio { get; set; }
     public int ExperienceYears { get; set; }
     public float Rating { get; set; }

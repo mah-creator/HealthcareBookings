@@ -3,6 +3,7 @@ using System;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareBookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250829134539_UseSqlite")]
+    partial class UseSqlite
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
@@ -92,6 +95,9 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.Property<string>("ClinicAdminUID")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AdminUserId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ClinicID")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -99,6 +105,8 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.HasKey("ClinicAdminUID");
 
                     b.HasAlternateKey("ClinicID");
+
+                    b.HasIndex("AdminUserId");
 
                     b.ToTable("ClinicAdmins");
                 });
@@ -119,6 +127,9 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DoctorUserId")
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("ExperienceYears")
                         .HasColumnType("INTEGER");
 
@@ -130,6 +141,8 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.HasIndex("CategoryID");
 
                     b.HasIndex("ClinicID");
+
+                    b.HasIndex("DoctorUserId");
 
                     b.ToTable("Doctors");
                 });
@@ -189,7 +202,12 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.Property<string>("PatientUID")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PatientUserId")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("PatientUID");
+
+                    b.HasIndex("PatientUserId");
 
                     b.ToTable("Patients");
                 });
@@ -556,6 +574,10 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.ClinicAdmin", b =>
                 {
+                    b.HasOne("HealthcareBookings.Domain.Entities.User", "AdminUser")
+                        .WithMany()
+                        .HasForeignKey("AdminUserId");
+
                     b.HasOne("HealthcareBookings.Domain.Entities.User", null)
                         .WithOne("ClinicAdminProperties")
                         .HasForeignKey("HealthcareBookings.Domain.Entities.ClinicAdmin", "ClinicAdminUID")
@@ -567,6 +589,8 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .HasForeignKey("HealthcareBookings.Domain.Entities.ClinicAdmin", "ClinicID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("AdminUser");
 
                     b.Navigation("Clinic");
                 });
@@ -591,9 +615,15 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HealthcareBookings.Domain.Entities.User", "DoctorUser")
+                        .WithMany()
+                        .HasForeignKey("DoctorUserId");
+
                     b.Navigation("Category");
 
                     b.Navigation("Clinic");
+
+                    b.Navigation("DoctorUser");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteClinics", b =>
@@ -641,6 +671,12 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .HasForeignKey("HealthcareBookings.Domain.Entities.Patient", "PatientUID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("HealthcareBookings.Domain.Entities.User", "PatientUser")
+                        .WithMany()
+                        .HasForeignKey("PatientUserId");
+
+                    b.Navigation("PatientUser");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.PatientLocation", b =>

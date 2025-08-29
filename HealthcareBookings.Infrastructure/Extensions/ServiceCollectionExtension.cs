@@ -11,7 +11,8 @@ public static class ServiceCollectionExtension
     public static void AddInfrastucture(this IServiceCollection services, IConfiguration configuration)
     {
 	   services.AddDbContext<AppDbContext>(
-		  options => options.UseNpgsql(configuration.GetConnectionString("Psql"))
+
+		  options => options.UseSqlite(configuration.GetConnectionString("Sqlite"))
 	   );
 
 	   services.AddScoped<IAppSeeder, AppSeeder>();
