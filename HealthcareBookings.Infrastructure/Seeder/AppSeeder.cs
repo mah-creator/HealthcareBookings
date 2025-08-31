@@ -43,6 +43,11 @@ public class AppSeeder(AppDbContext dbContext) : IAppSeeder
 		  {
 			 Name = UserRoles.ClinicAdmin,
 			 NormalizedName = UserRoles.ClinicAdmin.ToUpper()
+		  },
+		  new ()
+		  {
+			 Name = UserRoles.Doctor,
+			 NormalizedName = UserRoles.Doctor.ToUpper()
 		  }
 	   ];
 

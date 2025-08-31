@@ -42,8 +42,6 @@ app.MapGroup("api/identity")
 
 app.UseAuthorization();
 
-app.UseExceptionHandler();
-
 app.UseMiddleware<ExceptionHandlingMiddleawre>();
 
 app.MapControllers();

@@ -2,7 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HealthcareBookings.API.Controllers.Identity.Patient;
+namespace HealthcareBookings.API.Controllers.Identity;
 
 [Controller]
 [Route("/api/identity/patient")]
