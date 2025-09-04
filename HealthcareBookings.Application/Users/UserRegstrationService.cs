@@ -10,7 +10,7 @@ namespace HealthcareBookings.Application.Users;
 public class UserRegistrationService(UserManager<User> userManager,
 	IUserStore<User> userStore)
 {
-	public async Task RegisterUser(string email, string password, string role, CancellationToken cancellationToken)
+	public async Task<User> RegisterUser(string email, string password, string role, CancellationToken cancellationToken = default)
 	{
 		var passwordValidator = userManager.PasswordValidators.First();
 		var passwordHasher = userManager.PasswordHasher;
@@ -47,5 +47,6 @@ public class UserRegistrationService(UserManager<User> userManager,
 		await userStore.CreateAsync(newUser, cancellationToken);
 		await userManager.AddToRoleAsync(newUser, role);
 
+		return newUser;
 	}
 }

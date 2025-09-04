@@ -4,12 +4,12 @@ namespace HealthcareBookings.Domain.Entities;
 
 public class Clinic
 {
-    public string ClinicID { get; set; }
+    public string ClinicID { get; set; } = Guid.NewGuid().ToString();
     public string ClinicName { get; set; }
     public string? ClinicDescription { get; set; }
     public string ImagePath { get; set; }
-    public ClinicAdmin ClinicAdmin { get; set; }
     public Location Location { get; set; }
+    public ClinicAdmin ClinicAdmin { get; set; }
 
     public List<Doctor> Doctors { get; set; }
 }

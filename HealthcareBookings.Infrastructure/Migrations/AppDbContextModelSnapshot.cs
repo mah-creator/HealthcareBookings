@@ -84,7 +84,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
                     b.HasKey("ClinicID");
 
-                    b.ToTable("Clinic");
+                    b.ToTable("Clinics");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.ClinicAdmin", b =>
@@ -149,7 +149,15 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.HasKey("CategoryID");
+
+                    b.HasAlternateKey("CategoryName");
+
+                    b.HasAlternateKey("NormalizedName");
 
                     b.ToTable("DoctorCategories");
                 });
@@ -544,7 +552,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
                             b1.HasKey("ClinicID");
 
-                            b1.ToTable("Clinic");
+                            b1.ToTable("Clinics");
 
                             b1.WithOwner()
                                 .HasForeignKey("ClinicID");

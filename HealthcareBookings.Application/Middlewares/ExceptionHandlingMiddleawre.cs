@@ -22,10 +22,18 @@ public class ExceptionHandlingMiddleawre() : IMiddleware
 			});
 
 		}
-		catch (Exception e)
+		catch (InvalidHttpActionException e)
 		{
-			context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-			await context.Response.WriteAsync("Internal server error");
+			context.Response.StatusCode = StatusCodes.Status400BadRequest;
+			await context.Response.WriteAsJsonAsync(new ProblemDetails
+			{
+				Title = e.Message
+			});
 		}
+		//catch (Exception e)
+		//{
+		//	context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+		//	await context.Response.WriteAsync("Internal server error");
+		//}
 	}
 }

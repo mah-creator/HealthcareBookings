@@ -18,6 +18,7 @@ public class DoctorCategory
 {
     public string CategoryID { get; set; } = Guid.NewGuid().ToString();
     public string CategoryName { get; set; }
+    public string NormalizedName { get; set; }
     public string? CategoryDescription { get; set; }
     public string? CategoryLogoPath { get; set; }
     public List<Doctor> Doctors { get; set; }

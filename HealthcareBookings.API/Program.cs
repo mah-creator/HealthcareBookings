@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Resturants.API.Extensions;
 using HealthcareBookings.Application.Middleware;
 using MediatR;
+using HealthcareBookings.Application.CustomIdentity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +22,18 @@ builder.AddPresentation();
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>();
+
+builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
+	.Configure(options => {
+		options.BearerTokenExpiration = TimeSpan.FromDays(365);
+	});
+
+
+
+builder.Services.Configure<DataProtectorTokenProvider<User>>(o =>
+{
+    
+});
 
 var app = builder.Build();
 
@@ -38,7 +53,9 @@ app.UseHttpsRedirection();
     */
 app.MapGroup("api/identity")
     .WithTags("Identity")
-    .MapIdentityApi<User>();
+    .MapCustomIdentityApi<User>();
+
+app.UseStaticFiles();
 
 app.UseAuthorization();
 
