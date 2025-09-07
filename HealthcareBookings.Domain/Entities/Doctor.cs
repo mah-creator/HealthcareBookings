@@ -8,6 +8,7 @@ public class Doctor
     public float Rating { get; set; }
     public string ClinicID { get; set; }
     public Clinic Clinic { get; set; }
+    public User Account { get; set; }
     public string CategoryID { get; set; }
     public DoctorCategory Category { get; set; }
     public List<Schedule> Schedules { get; set; }

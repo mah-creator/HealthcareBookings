@@ -12,8 +12,11 @@ public class CreateClinicProfileComaandValidator : AbstractValidator<CreateClini
 			.NotEmpty().WithMessage("Clinic name is required");
 		RuleFor (cp => cp.Description)
 			.NotEmpty().WithMessage("Clinic description is required");
-		RuleFor(cp => cp.Location.AddressText)
-			.NotEmpty().WithMessage("Full address is required");
+		
+		RuleFor(cp => cp.Location.Country)
+			.NotNull().WithMessage("Country is required");
+		RuleFor(cp => cp.Location.City)
+			.NotEmpty().WithMessage("City is required");
 
 		RuleFor(cp => cp.Location.Latitude)
 			.NotNull().WithMessage("Latitude is required")
@@ -32,5 +35,6 @@ public class CreateClinicProfileComaandValidator : AbstractValidator<CreateClini
 			.When(cp => cp.Location is not null)
 			.WithMessage($"Invalid longitude value, valid range: "
 				+ $"[{ValidationConstants.LongitudeRange.Min},{ValidationConstants.LongitudeRange.Max}]");
+
 	}
 }

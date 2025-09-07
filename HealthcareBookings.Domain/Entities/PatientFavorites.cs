@@ -1,7 +1,7 @@
 ﻿namespace HealthcareBookings.Domain.Entities;
 
 
-public class FavoriteDoctors
+public class FavoriteDoctor
 {
     public string PatientID { get; set; }
     public string DoctorID { get; set; }
@@ -9,7 +9,7 @@ public class FavoriteDoctors
     public Doctor Doctor { get; set; }
 }
 
-public class FavoriteClinics
+public class FavoriteClinic
 {
     public string PatientID { get; set; }
     public string ClinicID { get; set; }

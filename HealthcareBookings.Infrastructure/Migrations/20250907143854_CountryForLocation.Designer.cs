@@ -3,6 +3,7 @@ using System;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareBookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250907143854_CountryForLocation")]
+    partial class CountryForLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
@@ -176,7 +179,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.ToTable("DoctorCategories");
                 });
 
-            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteClinic", b =>
+            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteClinics", b =>
                 {
                     b.Property<string>("PatientID")
                         .HasColumnType("TEXT");
@@ -188,10 +191,10 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
                     b.HasIndex("ClinicID");
 
-                    b.ToTable("FavoriteClinic");
+                    b.ToTable("FavoriteClinics");
                 });
 
-            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteDoctor", b =>
+            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteDoctors", b =>
                 {
                     b.Property<string>("PatientID")
                         .HasColumnType("TEXT");
@@ -203,7 +206,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
                     b.HasIndex("DoctorID");
 
-                    b.ToTable("FavoriteDoctor");
+                    b.ToTable("FavoriteDoctors");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.Patient", b =>
@@ -624,7 +627,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.Navigation("Clinic");
                 });
 
-            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteClinic", b =>
+            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteClinics", b =>
                 {
                     b.HasOne("HealthcareBookings.Domain.Entities.Clinic", "Clinic")
                         .WithMany()
@@ -643,7 +646,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteDoctor", b =>
+            modelBuilder.Entity("HealthcareBookings.Domain.Entities.FavoriteDoctors", b =>
                 {
                     b.HasOne("HealthcareBookings.Domain.Entities.Doctor", "Doctor")
                         .WithMany()

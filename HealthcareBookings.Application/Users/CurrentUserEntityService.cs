@@ -1,11 +1,15 @@
 ﻿using HealthcareBookings.Application.Data;
+using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace HealthcareBookings.Application.Users;
 
-public class CurrentUserEntityService(CurrentUserService currentUserService,
+public class CurrentUserEntityService(
+	CurrentUserService currentUserService,
+	UserManager<User> userManager,
 	IAppDbContext dbContext)
 {
 	public async Task<User> GetCurrentDoctor()
@@ -25,7 +29,8 @@ public class CurrentUserEntityService(CurrentUserService currentUserService,
 	{
 		var currentUser = currentUserService.GetCurrentUser();
 		var currentDoctor = dbContext.Users
-			.Include(u => u.PatientProperties)
+			.Include(u => u.PatientProperties).ThenInclude(p => p.FavoriteDoctors)
+			.Include(u => u.PatientProperties).ThenInclude(p => p.FavoriteClinics)
 			.Include(u => u.Profile)
 			.Where(u => u.Id == currentUser.Id)
 			.First();

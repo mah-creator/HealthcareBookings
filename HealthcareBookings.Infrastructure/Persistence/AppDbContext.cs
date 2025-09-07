@@ -15,10 +15,14 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 	public DbSet<Doctor> Doctors { get; set; }
 	public DbSet<Schedule> DoctorSchedules { get; set; }
 	public DbSet<TimeSlot> DoctorTimeSlots { get; set; }
+	public DbSet<Banner> Banners { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
+
+		modelBuilder.Entity<Banner>()
+			.HasKey(b => b.Id);
 
 		modelBuilder.Entity<ClinicAdmin>()
 		   .HasAlternateKey(ca => ca.ClinicID);
@@ -41,7 +45,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 		   .HasForeignKey<ClinicAdmin>(ca => ca.ClinicAdminUID);
 		modelBuilder.Entity<User>()
 		   .HasOne(u => u.DoctorProperties)
-		   .WithOne()
+		   .WithOne(d => d.Account)
 		   .HasForeignKey<Doctor>(d => d.DoctorUID);
 		modelBuilder.Entity<User>()
 		   .HasOne(u => u.PatientProperties)
@@ -115,27 +119,27 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 		   .HasForeignKey(pl => pl.PatientUID);
 
 		// FavoriteDoctors entity
-		modelBuilder.Entity<FavoriteDoctors>()
+		modelBuilder.Entity<FavoriteDoctor>()
 		   .HasKey(fd => new { fd.PatientID, fd.DoctorID });
 
-		modelBuilder.Entity<FavoriteDoctors>()
+		modelBuilder.Entity<FavoriteDoctor>()
 		   .HasOne(fd => fd.Patient)
 		   .WithMany(p => p.FavoriteDoctors)
 		   .HasForeignKey(fd => fd.PatientID);
-		modelBuilder.Entity<FavoriteDoctors>()
+		modelBuilder.Entity<FavoriteDoctor>()
 		   .HasOne(fd => fd.Doctor)
 		   .WithMany()
 		   .HasForeignKey(fd => fd.DoctorID);
 
 		// FavoriteClinics entity
-		modelBuilder.Entity<FavoriteClinics>()
+		modelBuilder.Entity<FavoriteClinic>()
 		   .HasKey(fc => new { fc.PatientID, fc.ClinicID });
 
-		modelBuilder.Entity<FavoriteClinics>()
+		modelBuilder.Entity<FavoriteClinic>()
 		   .HasOne(fc => fc.Patient)
 		   .WithMany(p => p.FavoriteClinics)
 		   .HasForeignKey(fc => fc.PatientID);
-		modelBuilder.Entity<FavoriteClinics>()
+		modelBuilder.Entity<FavoriteClinic>()
 		   .HasOne(fc => fc.Clinic)
 		   .WithMany()
 		   .HasForeignKey(fd => fd.ClinicID);

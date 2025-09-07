@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace HealthcareBookings.Infrastructure.Seeder;
 
-public class AppSeeder(AppDbContext dbContext) : IAppSeeder
+public class AppSeeder(AppDbContext dbContext, IPasswordHasher<User> passwordHasher) : IAppSeeder
 {
 	public async Task Seed()
 	{
@@ -23,9 +23,31 @@ public class AppSeeder(AppDbContext dbContext) : IAppSeeder
 				dbContext.DoctorCategories.AddRange(doctorCategories);
 				await dbContext.SaveChangesAsync();
 			}
+			if (!dbContext.Banners.Any())
+			{
+				var banners = GetBanners();
+				dbContext.Banners.AddRange(banners);
+				await dbContext.SaveChangesAsync();
+			}
 		}
 	}
 
+	private IEnumerable<Banner> GetBanners()
+	{
+		List<Banner> banners =
+		[
+			new()
+			{
+				ImagePath = "/images/defaults/banner1.png"
+			},
+			new() 
+			{
+				ImagePath = "/images/defaults/banner2.png"
+
+			}
+		];
+		return banners;
+	}
 	private IEnumerable<DoctorCategory> GetDoctorCategories()
 	{
 		List<DoctorCategory> doctorCategories =
@@ -70,6 +92,83 @@ public class AppSeeder(AppDbContext dbContext) : IAppSeeder
 
 		return doctorCategories;
 	}
+
+	// Generate two clinic admins with navigation properties
+	private List<User> GenerateTwoClinicAdmins()
+	{
+		var admin1 = new User
+		{
+			Id = Guid.NewGuid().ToString(),
+			UserName = "clinicadmin1",
+			NormalizedUserName = "CLINICADMIN1",
+			Email = "clinicadmin1@healthcare.com",
+			NormalizedEmail = "CLINICADMIN1@HEALTHCARE.COM",
+			EmailConfirmed = true,
+			PhoneNumber = "111222333",
+			PhoneNumberConfirmed = true,
+			SecurityStamp = Guid.NewGuid().ToString("D"),
+			ClinicAdminProperties = new ClinicAdmin
+			{
+				ClinicAdminUID = "admin1-id",
+				Clinic = new Clinic
+				{
+					ClinicID = Guid.NewGuid().ToString(),
+					ClinicName = "Sunrise Health Clinic",
+					ClinicDescription = "General healthcare and wellness services",
+					ImagePath = "images/clinic1.png",
+					Location = new Location
+					{
+						AddressText = "123 Main St",
+						City = "MetroCity",
+						PostalCode = "10001",
+						StreetName = "Main St",
+						StreetNumber = 123,
+						Latitude = 40.7128F,
+						Longitude = -74.0060F
+					}
+				}
+			}
+		};
+		admin1.PasswordHash = passwordHasher.HashPassword(admin1, "123aA!");
+
+		var admin2 = new User
+		{
+			Id = Guid.NewGuid().ToString(),
+			UserName = "clinicadmin2",
+			NormalizedUserName = "CLINICADMIN2",
+			Email = "clinicadmin2@healthcare.com",
+			NormalizedEmail = "CLINICADMIN2@HEALTHCARE.COM",
+			EmailConfirmed = true,
+			PhoneNumber = "444555666",
+			PhoneNumberConfirmed = true,
+			SecurityStamp = Guid.NewGuid().ToString("D"),
+			ClinicAdminProperties = new ClinicAdmin
+			{
+				ClinicAdminUID = "admin2-id",
+				Clinic = new Clinic
+				{
+					ClinicID = Guid.NewGuid().ToString(),
+					ClinicName = "Evergreen Family Clinic",
+					ClinicDescription = "Family medicine and pediatric care",
+					ImagePath = "images/clinic2.png",
+					Location = new Location
+					{
+						AddressText = "456 Oak Ave",
+						City = "GreenTown",
+						PostalCode = "20002",
+						StreetName = "Oak Ave",
+						StreetNumber = 456,
+						Latitude = 34.0522F,
+						Longitude = -118.2437F
+					}
+				}
+			}
+		};
+		admin2.PasswordHash = passwordHasher.HashPassword(admin2, "123aA!");
+
+		return new List<User> { admin1, admin2 };
+	}
+
 
 	private IEnumerable<IdentityRole> GetRoles()
 	{
