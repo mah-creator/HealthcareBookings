@@ -4,7 +4,9 @@ using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Patients.Queries;
 using HealthcareBookings.Application.StaticFiles.Uploads;
 using HealthcareBookings.Application.Users;
+using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
+using HealthcareBookings.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,17 +24,33 @@ public class ClinicProfileController(
 	IAppDbContext dbContext) : ControllerBase
 {
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	public async Task<IActionResult> CreateClinicProfile([FromBody] CreateClinicProfileCommand command)
+	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
+	public async Task<IActionResult> CreateClinicProfile(
+		[FromBody] CreateClinicProfileCommand command,
+		[FromServices] CreateClinicProfileComaandValidator validator)
 	{
+		var validationResult = await validator.ValidateAsync(command);
+		if (!validationResult.IsValid)
+		{
+			return BadRequest(new HttpValidationProblemDetails(validationResult.ToDictionary()));
+		}
 		await mediator.Send(command);
-		return NoContent();
+		
+		var clinic = currentUserEntityService.GetCurrentClinicAdmin().Result.ClinicAdminProperties.Clinic;
+
+		return Ok(new GetClinicProfileQuery
+		{
+			Name = clinic.ClinicName,
+			Description = clinic.ClinicDescription!,
+			ProfileImagePath = clinic.ImagePath,
+			Location = clinic.Location,
+		});
 	}
 
 	[HttpPatch("profileimage")]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
 	public async Task<IActionResult> UpdateClinicProfileImage(IFormFile image)
 	{
 		var clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
@@ -49,7 +67,10 @@ public class ClinicProfileController(
 
 		await dbContext.SaveChangesAsync();
 
-		return NoContent();
+		return Ok(new GetClinicProfileQuery
+		{
+			ProfileImagePath = clinic.ImagePath,
+		});
 	}
 
 	[HttpGet]
@@ -65,7 +86,6 @@ public class ClinicProfileController(
 			return BadRequest(new ProblemDetails() { Title = "Clinic profile wasn't created" });
 		}
 
-
 		return Ok(new GetClinicProfileQuery
 		{
 			Name = clinic.ClinicName,
@@ -75,10 +95,27 @@ public class ClinicProfileController(
 		});
 	}
 
-	//[HttpPatch]
-	//public async Task<IActionResult> UpdateClinicProfile(UpdateClinicProfileCommand command)
-	//{
-	//	await mediator.Send(command);
-	//	return NoContent();
-	//}
+	[HttpPatch]
+	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
+	public async Task<IActionResult> UpdateClinicProfile(
+		[FromBody] UpdateClinicProfileCommand command,
+		[FromServices] UpdateClinicProfileComaandValidator validator)
+	{
+		var validationResult = await validator.ValidateAsync(command);
+		if (!validationResult.IsValid)
+		{
+			return BadRequest(new HttpValidationProblemDetails(validationResult.ToDictionary()));
+		}
+		await mediator.Send(command);
+		var clinic = currentUserEntityService.GetCurrentClinicAdmin().Result.ClinicAdminProperties.Clinic;
+
+		return Ok(new GetClinicProfileQuery
+		{
+			Name = clinic.ClinicName,
+			Description = clinic.ClinicDescription!,
+			ProfileImagePath = clinic.ImagePath,
+			Location = clinic.Location,
+		});
+	}
 }

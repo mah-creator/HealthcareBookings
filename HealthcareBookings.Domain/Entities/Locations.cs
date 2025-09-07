@@ -1,4 +1,6 @@
-﻿namespace HealthcareBookings.Domain.Entities;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace HealthcareBookings.Domain.Entities;
 
 public class PatientLocation
 {
@@ -10,8 +12,8 @@ public class PatientLocation
 
 public class Location
 {
-    public float Longitude { get; set; }
-    public float Latitude { get; set; }
+	public float Longitude { get; set; }
+	public float Latitude { get; set; }
     public int StreetNumber { get; set; }
     public string StreetName { get; set; }
     public string City { get; set; }

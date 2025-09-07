@@ -49,7 +49,7 @@ public class CreatePatientProfileCommandHandler(
 
 		user.Profile = new ProfileInformation
 		{
-			DOB = request.DateOfBirth,
+			DOB = request.DateOfBirth.Value,
 			Gender = request.Gender,
 			Name = request.Name,
 			ProfileImagePath = relativePath

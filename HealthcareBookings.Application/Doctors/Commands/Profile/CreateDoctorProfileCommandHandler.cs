@@ -50,8 +50,8 @@ public class CreateDoctorProfileCommandHandler(
 		};
 
 
-		doctor.DoctorProperties.Bio = request.Bio;
 		doctor.DoctorProperties.ExperienceYears = request.ExperienceYears;
+		doctor.DoctorProperties.Bio = request.Bio;
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 	}

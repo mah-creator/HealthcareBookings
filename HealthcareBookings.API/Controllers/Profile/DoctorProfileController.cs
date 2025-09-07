@@ -3,11 +3,14 @@ using HealthcareBookings.Application.Doctors.Commands.Profile;
 using HealthcareBookings.Application.Doctors.Queries;
 using HealthcareBookings.Application.Patients.Queries;
 using HealthcareBookings.Application.Users;
+using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
+using HealthcareBookings.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace HealthcareBookings.API.Controllers.Profile;
 
@@ -16,17 +19,36 @@ namespace HealthcareBookings.API.Controllers.Profile;
 [Authorize(Roles = $"{UserRoles.Doctor}")]
 public class DoctorProfileController(
 	IMediator mediator,
-	CurrentUserEntityService currentUserEntityService,
-	IAppDbContext dbContext) : ControllerBase
+	CurrentUserEntityService currentUserEntityService) : ControllerBase
 {
 
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
-	public async Task<IActionResult> CreateDoctorProfile(CreateDoctorProfileCommand command)
+	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(GetDoctorProfileQuery), StatusCodes.Status200OK)]
+	public async Task<IActionResult> CreateDoctorProfile(
+		CreateDoctorProfileCommand command,
+		[FromServices] CreateDoctorProfileCommandValidator validator)
 	{
+		var validationResult = await validator.ValidateAsync(command);
+		if (!validationResult.IsValid)
+		{
+			return BadRequest(new HttpValidationProblemDetails(validationResult.ToDictionary()));
+		}
+
 		await mediator.Send(command);
-		return NoContent();
+
+		var doctor = await currentUserEntityService.GetCurrentDoctor();
+		var profile = doctor.Profile;
+
+		return Ok(new GetDoctorProfileQuery
+		{
+			Name = profile.Name,
+			DateOfBirth = profile.DOB,
+			Gender = profile.Gender,
+			ProfileImagePath = profile.ProfileImagePath,
+			Category = doctor.DoctorProperties.Category.CategoryName,
+			Bio = doctor.DoctorProperties.Bio!
+		});
 	}
 
 	[HttpGet]
@@ -47,15 +69,36 @@ public class DoctorProfileController(
 			DateOfBirth = user.Profile.DOB,
 			Gender = user.Profile.Gender,
 			ProfileImagePath = user.Profile.ProfileImagePath,
-			Category = user.DoctorProperties.Category?.CategoryName,
+			Category = user.DoctorProperties.Category.CategoryName,
 			Bio = user.DoctorProperties.Bio!
 		});
 	}
 
 	[HttpPatch]
-	public async Task<IActionResult> UpdateDoctorProfile(UpdateDoctorProfileCommand command)
+	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(GetDoctorProfileQuery), StatusCodes.Status200OK)]
+	public async Task<IActionResult> UpdateDoctorProfile(
+		UpdateDoctorProfileCommand command,
+		[FromServices] UpdateDoctorProfileCommandValidator validator)
 	{
+		var validationResult = await validator.ValidateAsync(command);
+		if (!validationResult.IsValid)
+		{
+			return BadRequest(new HttpValidationProblemDetails(validationResult.ToDictionary()));
+		}
 		await mediator.Send(command);
-		return NoContent();
+
+		var doctor = await currentUserEntityService.GetCurrentDoctor();
+		var profile = doctor.Profile;
+
+		return Ok(new GetDoctorProfileQuery
+		{
+			Name = profile.Name,
+			DateOfBirth = profile.DOB,
+			Gender = profile.Gender,
+			ProfileImagePath = profile.ProfileImagePath,
+			Category = doctor.DoctorProperties.Category.CategoryName,
+			Bio = doctor.DoctorProperties.Bio!
+		});
 	}
 }

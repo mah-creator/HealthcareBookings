@@ -6,10 +6,10 @@ using HealthcareBookings.Infrastructure.Seeder;
 using Microsoft.AspNetCore.Identity;
 using Resturants.API.Extensions;
 using HealthcareBookings.Application.Middleware;
-using MediatR;
 using HealthcareBookings.Application.CustomIdentity;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,13 +27,6 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
 	.Configure(options => {
 		options.BearerTokenExpiration = TimeSpan.FromDays(365);
 	});
-
-
-
-builder.Services.Configure<DataProtectorTokenProvider<User>>(o =>
-{
-    
-});
 
 var app = builder.Build();
 
