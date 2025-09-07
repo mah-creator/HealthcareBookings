@@ -33,17 +33,38 @@ public class AppSeeder(AppDbContext dbContext) : IAppSeeder
 			new()
 			{
 				CategoryName = "Dentistry",
-				NormalizedName = "DENTISTRY"
+				NormalizedName = "DENTISTRY",
+				CategoryLogoPath = "/images/defaults/dentistry_category.png"
 			},
 			new()
 			{
 				CategoryName = "Cardiology",
-				NormalizedName = "CARDIOLOGY"
+				NormalizedName = "CARDIOLOGY",
+				CategoryLogoPath = "/images/defaults/cardiology_category.png"
+			},
+			new() 
+			{
+				CategoryName = "Pulmonology",
+				NormalizedName = "PULMONOLOGY",
+				CategoryLogoPath = "/images/defaults/pulmonology_category.png"
 			},
 			new()
 			{
 				CategoryName = "General",
-				NormalizedName = "GENERAL"
+				NormalizedName = "GENERAL",
+				CategoryLogoPath = "/images/defaults/general_category.png"
+			},
+			new()
+			{
+				CategoryName = "Neurology",
+				NormalizedName = "NEUROLOGY",
+				CategoryLogoPath = "/images/defaults/neurology_category.png"
+			},
+			new() 
+			{
+				CategoryName = "Gastroenterology",
+				NormalizedName = "GASTROENTEROLOGY",
+				CategoryLogoPath = "/images/defaults/gastroenterology_category.png"
 			}
 		];
 
