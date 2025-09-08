@@ -1,16 +1,10 @@
-﻿using HealthcareBookings.Application.Data;
-using HealthcareBookings.Application.Doctors.Commands.Profile;
-using HealthcareBookings.Application.Doctors.Queries;
-using HealthcareBookings.Application.Patients.Queries;
+﻿using HealthcareBookings.Application.Doctors.Commands.Profile;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
-using HealthcareBookings.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace HealthcareBookings.API.Controllers.Profile;
 
@@ -24,7 +18,7 @@ public class DoctorProfileController(
 
 	[HttpPost]
 	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetDoctorProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(DoctorProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> CreateDoctorProfile(
 		CreateDoctorProfileCommand command,
 		[FromServices] CreateDoctorProfileCommandValidator validator)
@@ -40,7 +34,7 @@ public class DoctorProfileController(
 		var doctor = await currentUserEntityService.GetCurrentDoctor();
 		var profile = doctor.Profile;
 
-		return Ok(new GetDoctorProfileQuery
+		return Ok(new DoctorProfileDto
 		{
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
@@ -53,7 +47,7 @@ public class DoctorProfileController(
 
 	[HttpGet]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetDoctorProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(DoctorProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> GetDoctorProfile()
 	{
 		var user = await currentUserEntityService.GetCurrentDoctor();
@@ -63,7 +57,7 @@ public class DoctorProfileController(
 			return BadRequest(new ProblemDetails() { Title = "The doctor has no profile" });
 		}
 
-		return Ok(new GetDoctorProfileQuery
+		return Ok(new DoctorProfileDto
 		{
 			Name = user.Profile.Name,
 			DateOfBirth = user.Profile.DOB,
@@ -76,7 +70,7 @@ public class DoctorProfileController(
 
 	[HttpPatch]
 	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetDoctorProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(DoctorProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> UpdateDoctorProfile(
 		UpdateDoctorProfileCommand command,
 		[FromServices] UpdateDoctorProfileCommandValidator validator)
@@ -91,7 +85,7 @@ public class DoctorProfileController(
 		var doctor = await currentUserEntityService.GetCurrentDoctor();
 		var profile = doctor.Profile;
 
-		return Ok(new GetDoctorProfileQuery
+		return Ok(new DoctorProfileDto
 		{
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
@@ -101,4 +95,14 @@ public class DoctorProfileController(
 			Bio = doctor.DoctorProperties.Bio!
 		});
 	}
+}
+
+internal record DoctorProfileDto
+{
+	public string Name { get; set; }
+	public DateOnly DateOfBirth { get; set; }
+	public string Gender { get; set; }
+	public string ProfileImagePath { get; set; }
+	public string Category { get; set; }
+	public string Bio { get; set; }
 }

@@ -1,12 +1,14 @@
-﻿using HealthcareBookings.Application.Data;
+﻿using HealthcareBookings.Application.Clinics.Queries;
+using HealthcareBookings.Application.Data;
+using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks.Dataflow;
 
 namespace HealthcareBookings.API.Controllers.Clinics;
 
@@ -14,33 +16,33 @@ namespace HealthcareBookings.API.Controllers.Clinics;
 [Route("/api/clinics")]
 [Authorize(Roles = UserRoles.Patient)]
 public class ClinicsController(
+	IMediator mediator,
 	IAppDbContext dbContext,
 	CurrentUserEntityService currentUserEntityService) : ControllerBase
 {
 	private User patient = currentUserEntityService.GetCurrentPatient().Result;
 
 	[HttpGet]
-	[ProducesResponseType(typeof(List<ClinicDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public IActionResult GetClinics()
+	[ProducesResponseType(typeof(PagedList<ClinicDto>), StatusCodes.Status200OK)]
+	public async Task<IActionResult> GetClinics(GetClinicsQuery query)
 	{
-		return dbContext.Clinics.Any() ?
-			Ok(dbContext.Clinics
-				.AsNoTracking()
-				.Select(c => CreateClinicDto(c, patient)))
-			: BadRequest();
+		var clinicsQuery = await mediator.Send(query);
+		var clinicsDtoQuery = clinicsQuery
+			.Select(c => CreateClinicDto(c, patient));
+
+		return 
+			Ok(
+				await PagedList<ClinicDto>
+				.CreatePagedList(clinicsDtoQuery, query.Page, query.PageSize)
+			);
 	}
 
 	[HttpGet("{id}")]
 	[ProducesResponseType(typeof(ClinicDto), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public IActionResult GetClinicById(string id)
 	{
-		if (!dbContext.Clinics.Any()) 
-			return BadRequest();
-
-		var clinic = dbContext.Clinics.Find(id);
+		var clinic = dbContext.Clinics?.Find(id);
 
 		return clinic != null ? 
 			Ok(CreateClinicDto(clinic, patient))
@@ -48,21 +50,23 @@ public class ClinicsController(
 	}
 
 	[HttpGet("nearby")]
-	[ProducesResponseType(typeof(List<ClinicDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(PagedList<ClinicDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public IActionResult GetNearbyClinics([Required]float longitude, [Required]float latitude)
+	public async Task<IActionResult> GetNearbyClinics([Required]float longitude, [Required]float latitude, GetClinicsQuery query)
 	{
-		if (!dbContext.Clinics.Any())
-			return BadRequest();
-
-		var clinics = dbContext.Clinics
+		var clinicsQuery = await mediator.Send(query);
+		var clinicDtosQuery = clinicsQuery
 			.Where(c => Math.Abs(c.Location.Longitude - longitude) <= 20 
 					 && Math.Abs(c.Location.Latitude - latitude) <= 10)
 			.AsNoTracking()
 			.Select(c => CreateClinicDto(c, patient));
 
-		return clinics.Count() > 0 ?  Ok(clinics) : NotFound();
+		return clinicDtosQuery.Count() > 0 ? 
+			Ok(
+				await PagedList<ClinicDto>
+				.CreatePagedList(clinicDtosQuery, query.Page, query.PageSize)
+			)
+			: NotFound();
 	}
 	private static ClinicDto CreateClinicDto(Clinic c, User patient)
 	{

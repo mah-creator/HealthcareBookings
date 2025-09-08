@@ -1,7 +1,5 @@
 ﻿using HealthcareBookings.Application.Clinics.Commands.Profile;
-using HealthcareBookings.Application.Clinics.Queries;
 using HealthcareBookings.Application.Data;
-using HealthcareBookings.Application.Patients.Queries;
 using HealthcareBookings.Application.StaticFiles.Uploads;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
@@ -10,7 +8,6 @@ using HealthcareBookings.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareBookings.API.Controllers.Profile;
 
@@ -118,4 +115,12 @@ public class ClinicProfileController(
 			Location = clinic.Location,
 		});
 	}
+}
+
+internal class GetClinicProfileQuery
+{
+	public string Name { get; set; }
+	public string Description { get; set; }
+	public string ProfileImagePath { get; set; }
+	public Location Location { get; set; }
 }
