@@ -4,7 +4,6 @@ using HealthcareBookings.Application.StaticFiles.Uploads;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
-using HealthcareBookings.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +21,7 @@ public class ClinicProfileController(
 {
 	[HttpPost]
 	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ClinicProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> CreateClinicProfile(
 		[FromBody] CreateClinicProfileCommand command,
 		[FromServices] CreateClinicProfileComaandValidator validator)
@@ -32,22 +31,15 @@ public class ClinicProfileController(
 		{
 			return BadRequest(new HttpValidationProblemDetails(validationResult.ToDictionary()));
 		}
-		await mediator.Send(command);
 		
-		var clinic = currentUserEntityService.GetCurrentClinicAdmin().Result.ClinicAdminProperties.Clinic;
+		var clinicDto = await mediator.Send(command);
 
-		return Ok(new GetClinicProfileQuery
-		{
-			Name = clinic.ClinicName,
-			Description = clinic.ClinicDescription!,
-			ProfileImagePath = clinic.ImagePath,
-			Location = clinic.Location,
-		});
+		return Ok(clinicDto);
 	}
 
 	[HttpPatch("profileimage")]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ClinicProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> UpdateClinicProfileImage(IFormFile image)
 	{
 		var clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
@@ -64,7 +56,7 @@ public class ClinicProfileController(
 
 		await dbContext.SaveChangesAsync();
 
-		return Ok(new GetClinicProfileQuery
+		return Ok(new ClinicProfileDto
 		{
 			ProfileImagePath = clinic.ImagePath,
 		});
@@ -72,7 +64,7 @@ public class ClinicProfileController(
 
 	[HttpGet]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ClinicProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> GetClinicProfile()
 	{
 		var  clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
@@ -83,7 +75,7 @@ public class ClinicProfileController(
 			return BadRequest(new ProblemDetails() { Title = "Clinic profile wasn't created" });
 		}
 
-		return Ok(new GetClinicProfileQuery
+		return Ok(new ClinicProfileDto
 		{
 			Name = clinic.ClinicName,
 			Description = clinic.ClinicDescription!,
@@ -94,7 +86,7 @@ public class ClinicProfileController(
 
 	[HttpPatch]
 	[ProducesResponseType(typeof(HttpValidationProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(GetClinicProfileQuery), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(ClinicProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> UpdateClinicProfile(
 		[FromBody] UpdateClinicProfileCommand command,
 		[FromServices] UpdateClinicProfileComaandValidator validator)
@@ -104,23 +96,9 @@ public class ClinicProfileController(
 		{
 			return BadRequest(new HttpValidationProblemDetails(validationResult.ToDictionary()));
 		}
-		await mediator.Send(command);
-		var clinic = currentUserEntityService.GetCurrentClinicAdmin().Result.ClinicAdminProperties.Clinic;
-
-		return Ok(new GetClinicProfileQuery
-		{
-			Name = clinic.ClinicName,
-			Description = clinic.ClinicDescription!,
-			ProfileImagePath = clinic.ImagePath,
-			Location = clinic.Location,
-		});
+		
+		var clinicDto = await mediator.Send(command);
+		
+		return Ok(clinicDto);
 	}
-}
-
-internal class GetClinicProfileQuery
-{
-	public string Name { get; set; }
-	public string Description { get; set; }
-	public string ProfileImagePath { get; set; }
-	public Location Location { get; set; }
 }

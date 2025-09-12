@@ -11,9 +11,9 @@ namespace HealthcareBookings.Application.Clinics.Commands.Profile;
 
 public class UpdateClinicProfileCommandHandler(
 	IAppDbContext dbContext,
-	CurrentUserEntityService currentUserEntityService) : IRequestHandler<CreateClinicProfileCommand>
+	CurrentUserEntityService currentUserEntityService) : IRequestHandler<CreateClinicProfileCommand, ClinicProfileDto>
 {
-	public async Task Handle(CreateClinicProfileCommand request, CancellationToken cancellationToken)
+	public async Task<ClinicProfileDto> Handle(CreateClinicProfileCommand request, CancellationToken cancellationToken)
 	{
 		var clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
 		var clinic = clinicAdmin.ClinicAdminProperties?.Clinic;
@@ -28,5 +28,13 @@ public class UpdateClinicProfileCommandHandler(
 		clinic.Location = request.Location ?? clinic.Location;
 
 		await dbContext.SaveChangesAsync();
+
+		return new()
+		{
+			Name = clinic.ClinicName,
+			Description = clinic.ClinicDescription!,
+			ProfileImagePath = clinic.ImagePath,
+			Location = clinic.Location,
+		};
 	}
 }

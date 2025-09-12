@@ -3,7 +3,7 @@ using MediatR;
 
 namespace HealthcareBookings.Application.Clinics.Commands.Profile;
 
-public class UpdateClinicProfileCommand : IRequest
+public class UpdateClinicProfileCommand : IRequest<ClinicProfileDto>
 {
 	public string Name { get; set; }
 	public string Description { get; set; }

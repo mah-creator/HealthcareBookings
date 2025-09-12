@@ -13,6 +13,14 @@ public static class WebApplicationBuilderExtension
 		builder.Services.AddHttpContextAccessor();
 		builder.Services.AddAuthentication();
 
+		builder.Services.AddCors(c => 
+			c.AddPolicy("Development", options => 
+				options
+					.AllowAnyOrigin()
+					.AllowCredentials()
+					.AllowAnyHeader()
+					.AllowAnyMethod()));
+
 		builder.Services.AddControllers()
 			.AddJsonOptions(o =>
 			{

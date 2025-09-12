@@ -1,12 +1,10 @@
 ﻿using HealthcareBookings.Domain.Entities;
-using MediatR;
-using System.ComponentModel.DataAnnotations;
 
 namespace HealthcareBookings.Application.Clinics.Commands.Profile;
-
-public class CreateClinicProfileCommand : IRequest<ClinicProfileDto>
+public class ClinicProfileDto
 {
 	public string Name { get; set; }
 	public string Description { get; set; }
+	public string ProfileImagePath { get; set; }
 	public Location Location { get; set; }
 }
