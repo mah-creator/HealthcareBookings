@@ -11,9 +11,9 @@ namespace HealthcareBookings.Application.Clinics.Commands.Profile;
 
 public class UpdateClinicProfileCommandHandler(
 	IAppDbContext dbContext,
-	CurrentUserEntityService currentUserEntityService) : IRequestHandler<CreateClinicProfileCommand, ClinicProfileDto>
+	CurrentUserEntityService currentUserEntityService) : IRequestHandler<UpdateClinicProfileCommand, ClinicProfileDto>
 {
-	public async Task<ClinicProfileDto> Handle(CreateClinicProfileCommand request, CancellationToken cancellationToken)
+	public async Task<ClinicProfileDto> Handle(UpdateClinicProfileCommand request, CancellationToken cancellationToken)
 	{
 		var clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
 		var clinic = clinicAdmin.ClinicAdminProperties?.Clinic;

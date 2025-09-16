@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 	public DbSet<Clinic> Clinics { get; set; }
 	public DbSet<DoctorCategory> DoctorCategories { get; set; }
 	public DbSet<Doctor> Doctors { get; set; }
+	public DbSet<Appointment> Appointments { get; set; }
 	public DbSet<Schedule> DoctorSchedules { get; set; }
 	public DbSet<TimeSlot> DoctorTimeSlots { get; set; }
 	public DbSet<Banner> Banners { get; set; }
@@ -49,7 +50,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 		   .HasForeignKey<Doctor>(d => d.DoctorUID);
 		modelBuilder.Entity<User>()
 		   .HasOne(u => u.PatientProperties)
-		   .WithOne()
+		   .WithOne(p => p.Account)
 		   .HasForeignKey<Patient>(p => p.PatientUID);
 
 		// ProfileInformation entity
@@ -72,7 +73,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 
 		// Appointment entity
 		modelBuilder.Entity<Appointment>()
-		   .HasKey(a => a.AppointmetnID);
+		   .HasKey(a => a.AppointmentID);
 		modelBuilder.Entity<Appointment>()
 		   .HasAlternateKey(a => a.TimeSlotID);
 
@@ -169,7 +170,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 		// 1-N relation between Doctor -> Schedule
 		modelBuilder.Entity<Doctor>()
 		   .HasMany(d => d.Schedules)
-		   .WithOne(s => s.Doctor)
+		   .WithOne()
 		   .HasForeignKey(s => s.DoctorID);
 
 		// 1-N relation between Schedule -> TimeSlot

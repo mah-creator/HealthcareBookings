@@ -31,6 +31,14 @@ public class CurrentUserEntityService(
 		var currentDoctor = dbContext.Users
 			.Include(u => u.PatientProperties).ThenInclude(p => p.FavoriteDoctors)
 			.Include(u => u.PatientProperties).ThenInclude(p => p.FavoriteClinics)
+			.Include(u => u.PatientProperties).ThenInclude(p => p.Appointments)
+				.ThenInclude(a => a.Doctor).ThenInclude(d => d.Clinic).ThenInclude(c => c.Location)
+			.Include(u => u.PatientProperties).ThenInclude(p => p.Appointments)
+				.ThenInclude(a => a.Doctor).ThenInclude(d => d.Account).ThenInclude(d => d.Profile)
+			.Include(u => u.PatientProperties).ThenInclude(p => p.Appointments)
+				.ThenInclude(a => a.Doctor).ThenInclude(d => d.Category)
+			.Include(u => u.PatientProperties).ThenInclude(p => p.Appointments)
+				.ThenInclude(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
 			.Include(u => u.Profile)
 			.Where(u => u.Id == currentUser.Id)
 			.First();

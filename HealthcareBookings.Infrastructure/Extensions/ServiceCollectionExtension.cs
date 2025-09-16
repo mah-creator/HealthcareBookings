@@ -3,6 +3,7 @@ using HealthcareBookings.Application.Users;
 using HealthcareBookings.Infrastructure.Persistence;
 using HealthcareBookings.Infrastructure.Seeder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,10 +13,10 @@ public static class ServiceCollectionExtension
 {
 	public static void AddInfrastucture(this IServiceCollection services, IConfiguration configuration)
 	{
-		services.AddDbContext<IAppDbContext, AppDbContext>(
-
-		   options => options.UseSqlite(configuration.GetConnectionString("Sqlite"))
-	   );
+		services.AddDbContext<IAppDbContext, AppDbContext>(options =>
+		{
+			options.UseSqlite(configuration.GetConnectionString("Sqlite"));
+		});
 
 		services.AddScoped<IAppSeeder, AppSeeder>();
 	}

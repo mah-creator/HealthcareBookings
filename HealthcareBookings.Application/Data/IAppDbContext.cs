@@ -13,6 +13,7 @@ public interface IAppDbContext
 	public DbSet<Doctor> Doctors { get; set; }
 	public DbSet<Schedule> DoctorSchedules { get; set; }
 	public DbSet<TimeSlot> DoctorTimeSlots { get; set; }
+	public DbSet<Appointment> Appointments { get; set; }
 	public DbSet<Banner> Banners { get; set; }
 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

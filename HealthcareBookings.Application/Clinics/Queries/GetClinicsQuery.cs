@@ -7,7 +7,7 @@ namespace HealthcareBookings.Application.Clinics.Queries;
 public class GetClinicsQuery : IRequest<IQueryable<Clinic>>
 {
 	public string QueryParameter { get; set; }
-	public string SortBy { get; set; }
+	public string SortOrder { get; set; }
 	public string SortColumn { get; set; }
 	[Required]
 	public int PageSize { get; set; }

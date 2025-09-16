@@ -3,6 +3,7 @@
 public class Patient
 {
     public string PatientUID { get; set; }
+    public User Account { get; set; }
     public List<FavoriteDoctor> FavoriteDoctors { get; set; }
     public List<FavoriteClinic> FavoriteClinics { get; set; }
 

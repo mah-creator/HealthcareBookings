@@ -1,4 +1,6 @@
 ﻿using FluentValidation;
+using HealthcareBookings.Application.Clinics.Commands.Profile;
+using HealthcareBookings.Application.Clinics.Queries;
 using HealthcareBookings.Application.Doctors.Commands;
 using HealthcareBookings.Application.Middleware;
 using HealthcareBookings.Application.Patients.Commands.Profile;
@@ -6,6 +8,7 @@ using HealthcareBookings.Application.StaticFiles.Defaults;
 using HealthcareBookings.Application.StaticFiles.Uploads;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HealthcareBookings.Application.Extensions;
@@ -16,13 +19,17 @@ public static class ServiceCollectionExtension
     {
 	   var registerDoctorCommandHandlerAssembly = typeof(RegisterDoctorCommandHandler).Assembly;
 	   var createPatientProfileCommandHandlerAssembly = typeof(CreatePatientProfileCommandHandler).Assembly;
+		var updateClinicProfileCommandHandlerAssembly = typeof(UpdateClinicProfileCommandHandler).Assembly;
+		var getClinicsQueryHandlerAssembly = typeof(GetClinicsQueryHandler).Assembly;
 
 		services.AddMediatR(cfg =>
 	   {
 		  cfg.RegisterServicesFromAssemblies(
 			 [
 				registerDoctorCommandHandlerAssembly,
-				createPatientProfileCommandHandlerAssembly
+				createPatientProfileCommandHandlerAssembly,
+				updateClinicProfileCommandHandlerAssembly,
+				getClinicsQueryHandlerAssembly
 			 ]
 		  );
 	   });
@@ -34,6 +41,7 @@ public static class ServiceCollectionExtension
 		services.AddScoped<FileUploadService>();
 		services.AddScoped<DefaultProfileImageService>();
 		services.AddValidatorsFromAssembly(typeof(CreateDoctorProfileCommandValidator).Assembly);
+		services.AddValidatorsFromAssembly(typeof(CreatePatientProfileCommandValidator).Assembly);
 
 	}
 }

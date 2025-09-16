@@ -24,7 +24,6 @@ public static class WebApplicationBuilderExtension
 		builder.Services.AddControllers()
 			.AddJsonOptions(o =>
 			{
-				o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 				o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
 			});
 

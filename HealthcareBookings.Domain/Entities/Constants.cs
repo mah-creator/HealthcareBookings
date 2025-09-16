@@ -11,7 +11,7 @@ public static class Gender
 
 public static class AppointmentStatus
 {
-    public const string Upcomming = "Upcomming";
+    public const string Upcoming = "Upcoming";
     public const string Completed = "Completed";
     public const string Canceled = "Canceled";
 }

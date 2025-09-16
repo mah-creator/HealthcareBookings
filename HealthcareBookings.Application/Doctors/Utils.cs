@@ -14,7 +14,7 @@ public static class Utils
 			IsFavorite = patient.PatientProperties?.FavoriteDoctors?.Find(fd => fd.DoctorID == d.DoctorUID) is not null,
 			ClinicName = d.Clinic.ClinicName,
 			ClinicLocation = d.Clinic.Location.ToString(),
-			Rating = d.Appointments.Sum(a => a.Review.Rating) / d.Appointments.Count(a => a.Review != null),
+			Rating = d.Rating,
 			Reviews = d.Appointments.Count(a => a.Review != null)
 		};
 	}

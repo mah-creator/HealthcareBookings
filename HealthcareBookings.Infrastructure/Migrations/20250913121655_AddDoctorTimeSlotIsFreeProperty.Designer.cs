@@ -3,6 +3,7 @@ using System;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,16 +11,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareBookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250913121655_AddDoctorTimeSlotIsFreeProperty")]
+    partial class AddDoctorTimeSlotIsFreeProperty
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.Appointment", b =>
                 {
-                    b.Property<string>("AppointmentID")
+                    b.Property<string>("AppointmetnID")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DoctorID")
@@ -38,7 +41,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("AppointmentID");
+                    b.HasKey("AppointmetnID");
 
                     b.HasAlternateKey("TimeSlotID");
 
@@ -46,7 +49,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
                     b.HasIndex("PatientID");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointment");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.AppointmentReview", b =>
@@ -287,7 +290,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                     b.Property<string>("SlotID")
                         .HasColumnType("TEXT");
 
-                    b.Property<TimeOnly>("EndTime")
+                    b.Property<DateTime>("EndTime")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsFree")
@@ -297,7 +300,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<TimeOnly>("StartTime")
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("TEXT");
 
                     b.HasKey("SlotID");
@@ -667,13 +670,11 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.Patient", b =>
                 {
-                    b.HasOne("HealthcareBookings.Domain.Entities.User", "Account")
+                    b.HasOne("HealthcareBookings.Domain.Entities.User", null)
                         .WithOne("PatientProperties")
                         .HasForeignKey("HealthcareBookings.Domain.Entities.Patient", "PatientUID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.PatientLocation", b =>
@@ -741,11 +742,13 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.Schedule", b =>
                 {
-                    b.HasOne("HealthcareBookings.Domain.Entities.Doctor", null)
+                    b.HasOne("HealthcareBookings.Domain.Entities.Doctor", "Doctor")
                         .WithMany("Schedules")
                         .HasForeignKey("DoctorID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.TimeSlot", b =>

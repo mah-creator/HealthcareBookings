@@ -3,6 +3,7 @@ using System;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,16 +11,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareBookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250913143321_TimeOnlyForTimeSlots")]
+    partial class TimeOnlyForTimeSlots
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.Appointment", b =>
                 {
-                    b.Property<string>("AppointmentID")
+                    b.Property<string>("AppointmetnID")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DoctorID")
@@ -38,7 +41,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("AppointmentID");
+                    b.HasKey("AppointmetnID");
 
                     b.HasAlternateKey("TimeSlotID");
 
@@ -46,7 +49,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
                     b.HasIndex("PatientID");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("Appointment");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.AppointmentReview", b =>
@@ -667,13 +670,11 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.Patient", b =>
                 {
-                    b.HasOne("HealthcareBookings.Domain.Entities.User", "Account")
+                    b.HasOne("HealthcareBookings.Domain.Entities.User", null)
                         .WithOne("PatientProperties")
                         .HasForeignKey("HealthcareBookings.Domain.Entities.Patient", "PatientUID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.PatientLocation", b =>
@@ -750,13 +751,11 @@ namespace HealthcareBookings.Infrastructure.Migrations
 
             modelBuilder.Entity("HealthcareBookings.Domain.Entities.TimeSlot", b =>
                 {
-                    b.HasOne("HealthcareBookings.Domain.Entities.Schedule", "Schedule")
+                    b.HasOne("HealthcareBookings.Domain.Entities.Schedule", null)
                         .WithMany("TimeSlots")
                         .HasForeignKey("ScheduleID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Schedule");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

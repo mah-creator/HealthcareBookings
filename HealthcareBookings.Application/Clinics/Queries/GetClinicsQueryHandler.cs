@@ -25,7 +25,7 @@ public class GetClinicsQueryHandler(IAppDbContext dbContext) : IRequestHandler<G
 			_ => c => c.ClinicID
 		};
 
-		if (request.SortBy == SortOrder.Desc)
+		if (request.SortOrder == SortOrder.Desc)
 			clinicsQuery = clinicsQuery.OrderByDescending(sortColumnSelection);
 		else
 			clinicsQuery = clinicsQuery.OrderBy(sortColumnSelection);
