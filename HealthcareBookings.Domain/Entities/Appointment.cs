@@ -20,4 +20,5 @@ public class AppointmentReview
     public string AppointmentID { get; set; }
     public float Rating { get; set; } = 0;
     public string ReviewText { get; set; }
+    public Appointment Appointment { get; set; }
 }

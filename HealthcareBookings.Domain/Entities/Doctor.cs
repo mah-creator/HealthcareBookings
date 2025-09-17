@@ -5,7 +5,8 @@ public class Doctor
     public string DoctorUID { get; set; }
     public string? Bio { get; set; }
     public int ExperienceYears { get; set; }
-    public float Rating { get; set; }
+    public int RatingCount { get; set; } = 0;
+    public float Rating { get; set; } = 0;
     public string ClinicID { get; set; }
     public Clinic Clinic { get; set; }
     public User Account { get; set; }

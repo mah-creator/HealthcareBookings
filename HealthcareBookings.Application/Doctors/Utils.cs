@@ -15,7 +15,10 @@ public static class Utils
 			ClinicName = d.Clinic.ClinicName,
 			ClinicLocation = d.Clinic.Location.ToString(),
 			Rating = d.Rating,
-			Reviews = d.Appointments.Count(a => a.Review != null)
+			Reviews = d.Appointments.Count(a => a.Review != null),
+			Experience = d.ExperienceYears,
+			Bio = d.Bio,
+			PatientCount = d.Appointments.DistinctBy(a => a.PatientID).Count()
 		};
 	}
 }

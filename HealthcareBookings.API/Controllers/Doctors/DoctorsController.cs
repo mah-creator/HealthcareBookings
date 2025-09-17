@@ -34,7 +34,7 @@ public class DoctorsController(
 
 		return 
 			Ok( 
-				await PagedList<DoctorDto>
+				PagedList<DoctorDto>
 				.CreatePagedList(doctorDtos, query.Page, query.PageSize)
 			);
 	}
@@ -51,8 +51,19 @@ public class DoctorsController(
 
 		return doctorDtosByCategory.Any() ?
 			Ok(
-				await PagedList<DoctorDto>
+				PagedList<DoctorDto>
 				.CreatePagedList(doctorDtosByCategory, query.Page, query.PageSize))
 			: NotFound();
+	}
+
+	[HttpGet("one")]
+	public async Task<IActionResult> GetDoctorById(string doctorId)
+	{
+		var patient = await currentUserEntityService.GetCurrentPatient();
+		var doctor = dbContext.Doctors?.Find(doctorId);
+		if (doctor == null)
+			return BadRequest("Doctor wasn't found");
+
+		return Ok(CreateDoctorDto(doctor, patient));
 	}
 }

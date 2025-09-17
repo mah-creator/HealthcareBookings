@@ -67,7 +67,7 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 
 		modelBuilder.Entity<Appointment>()
 		   .HasOne(a => a.Review)
-		   .WithOne()
+		   .WithOne(r => r.Appointment)
 		   .HasForeignKey<AppointmentReview>(ar => ar.AppointmentID)
 		   .IsRequired(true);
 

@@ -45,7 +45,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		{
 			return BadRequest("You already have an appointment at this time");
 		}
-		if (patientAppointments.Where(a => a.DoctorID == doctorId).Any())
+		if (patientAppointments.Where(a => a.DoctorID == doctorId).Any() && patientAppointments.Where(a => a.DoctorID == doctorId).All(a => a.Status.Equals(AppointmentStatus.Upcoming)))
 		{
 			return BadRequest("You have an appointment with this doctor");
 		}
@@ -73,7 +73,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		});
 	}
 
-	[HttpPatch("/api/appointments/reschedule/{appointmentId}")]
+	[HttpPatch("reschedule/{appointmentId}")]
 	public async Task<IActionResult> RescheduleAppointment(string appointmentId, DateOnly date, TimeOnly time)
 	{
 		var appointment = dbContext.Appointments
@@ -85,9 +85,9 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		{
 			return BadRequest("Appointment wasn't found");
 		}
-		if (appointment.Status.Equals(AppointmentStatus.Completed, StringComparison.OrdinalIgnoreCase))
+		if (!appointment.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase))
 		{
-			return BadRequest("Can't reschedule a completed appointment");
+			return BadRequest("Can't reschedule a completed/canceled appointment");
 		}
 
 		appointment.TimeSlot.IsFree = true;
@@ -143,6 +143,31 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			}).ToList();
 
 		return Ok(appointments);
+	}
+
+	[HttpDelete("cancel/{appointmentId}")]
+	public async Task<IActionResult> CancelAppointment(string appointmentId)
+	{
+		var appointment = dbContext.Appointments
+			.Include(a => a.TimeSlot).Include(a => a.Doctor)
+			.Where(a => a.AppointmentID == appointmentId)
+			.FirstOrDefault();
+
+		if (appointment == null || appointment.TimeSlot == null)
+		{
+			return BadRequest("Appointment wasn't found");
+		}
+		if (!appointment.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase))
+		{
+			return BadRequest("Can't cancel a completed/cancled appointment");
+		}
+
+		appointment.TimeSlot.IsFree = true;
+
+		dbContext.Appointments.Remove(appointment);
+		await dbContext.SaveChangesAsync();
+
+		return Ok();
 	}
 }
 

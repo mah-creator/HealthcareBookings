@@ -12,18 +12,18 @@ public class PagedList<T>
 	public bool HasNext => Page * PageSize < TotalCount;
 	public bool HasPrevious => Page > 1;
 
-	public static async Task<PagedList<T>> CreatePagedList(IQueryable<T> query, int page, int pageSize)
+	public static PagedList<T> CreatePagedList(IQueryable<T>? query , int page = 1, int pageSize = 5)
 	{
-		var items = query
+		var items = query?
 			.Skip((page - 1) * pageSize)
 			.Take(pageSize);
 
 		return new()
 		{
-			Items = await items.ToListAsync(),
+			Items = items?.ToList() ?? [],
 			Page = page,
 			PageSize = pageSize,
-			TotalCount = await query.CountAsync()
+			TotalCount = query?.Count() ?? 0
 		};
 	}
 }

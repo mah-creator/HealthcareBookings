@@ -25,4 +25,7 @@ public struct DoctorDto
 	public string ClinicLocation { get; set; }
 	public float Rating { get; set; }
 	public int Reviews { get; set; }
+	public int Experience { get; set; }
+	public int PatientCount { get; set; }
+	public string Bio { get; set; }
 }

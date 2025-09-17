@@ -32,7 +32,7 @@ public class ClinicsController(
 
 		return 
 			Ok(
-				await PagedList<ClinicDto>
+				PagedList<ClinicDto>
 				.CreatePagedList(clinicsDtoQuery, query.Page, query.PageSize)
 			);
 	}
@@ -63,7 +63,7 @@ public class ClinicsController(
 
 		return clinicDtosQuery.Count() > 0 ? 
 			Ok(
-				await PagedList<ClinicDto>
+				PagedList<ClinicDto>
 				.CreatePagedList(clinicDtosQuery, query.Page, query.PageSize)
 			)
 			: NotFound();
