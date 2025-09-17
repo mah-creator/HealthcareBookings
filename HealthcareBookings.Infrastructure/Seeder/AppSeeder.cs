@@ -1,14 +1,16 @@
-﻿using HealthcareBookings.Domain.Constants;
+﻿using HealthcareBookings.Application.Users;
+using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 
 namespace HealthcareBookings.Infrastructure.Seeder;
 
-public class AppSeeder(AppDbContext dbContext, IPasswordHasher<User> passwordHasher) : IAppSeeder
+public class AppSeeder(AppDbContext dbContext, UserRegistrationService userRegistrationService, IPasswordHasher<User> passwordHasher) : IAppSeeder
 {
 	public async Task Seed()
 	{
+		
 		if (await dbContext.Database.CanConnectAsync())
 		{
 			if (!dbContext.Roles.Any())

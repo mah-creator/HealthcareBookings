@@ -98,32 +98,35 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		return await CreateAppointment(appointment.Doctor.DoctorUID, date, time);
 	}
 
-	[HttpGet("{doctorId}")]
-	public async Task<IActionResult> GetDoctorAppointments(string doctorId)
+	[HttpGet("doctor")]
+	[Authorize(Roles = UserRoles.Doctor)]
+	public async Task<IActionResult> GetDoctorAppointments(string appointmentStatus)
 	{
+		var doctor = await currentUserEntityService.GetCurrentDoctor();
+
 		var appointments = dbContext.Appointments
+			.Where(		a => a.Status.ToLower().Equals(appointmentStatus.ToLower())
+					&&	a.DoctorID == doctor.Id)
 			.Include(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
 			.Include(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
-			.Where(a => a.DoctorID == doctorId).AsQueryable();
-
-		var appointmentDtos = appointments.Select(a => new AppointmentDto
-		{
-			AppointmentId = a.AppointmentID,
-			Date = a.TimeSlot.Schedule.Date,
-			Start = a.TimeSlot.StartTime,
-			End = a.TimeSlot.EndTime,
-			PatientInfo = new PatientAppointmentInfo()
+			.Select(a => new AppointmentDto
 			{
-				Name = a.Patient.Account.Profile.Name,
-				Age = DateTime.Now.Year - a.Patient.Account.Profile.DOB.Year,
-				Gender = a.Patient.Account.Profile.Gender
-			}
-		}).ToList();
+				AppointmentId = a.AppointmentID,
+				Date = a.TimeSlot.Schedule.Date,
+				Start = a.TimeSlot.StartTime,
+				End = a.TimeSlot.EndTime,
+				PatientInfo = new PatientAppointmentInfo()
+				{
+					Name = a.Patient.Account.Profile.Name,
+					Age = DateTime.Now.Year - a.Patient.Account.Profile.DOB.Year,
+					Gender = a.Patient.Account.Profile.Gender
+				}
+			}).ToList();
 
-		return Ok(appointmentDtos);
+		return Ok(appointments);
 	}
 
-	[HttpGet]
+	[HttpGet("patient")]
 	[Authorize(Roles = UserRoles.Patient)]
 	public async Task<IActionResult> GetPatientAppointments(string appointmentStatus)
 	{

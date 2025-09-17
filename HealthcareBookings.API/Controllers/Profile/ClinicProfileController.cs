@@ -7,6 +7,7 @@ using HealthcareBookings.Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Nodes;
 
 namespace HealthcareBookings.API.Controllers.Profile;
 
@@ -39,7 +40,6 @@ public class ClinicProfileController(
 
 	[HttpPatch("profileimage")]
 	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-	[ProducesResponseType(typeof(ClinicProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> UpdateClinicProfileImage(IFormFile image)
 	{
 		var clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
@@ -56,10 +56,7 @@ public class ClinicProfileController(
 
 		await dbContext.SaveChangesAsync();
 
-		return Ok(new ClinicProfileDto
-		{
-			ProfileImagePath = clinic.ImagePath,
-		});
+		return Ok(new { profileImagePath = imagePath });
 	}
 
 	[HttpGet]
