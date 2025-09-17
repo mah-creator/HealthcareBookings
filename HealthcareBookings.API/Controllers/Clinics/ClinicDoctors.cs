@@ -23,6 +23,7 @@ public class ClinicDoctors(IMediator mediator, CurrentUserEntityService currentU
 			return BadRequest("Clinic wasn't found");
 
 		var doctors = await mediator.Send(query);
+		doctors = doctors?.Where(d => d.ClinicID == clinic.ClinicID);
 		var doctorDtos = doctors?.AsEnumerable().Select(d => new DoctorDto
 		{
 			Id = d.DoctorUID,
