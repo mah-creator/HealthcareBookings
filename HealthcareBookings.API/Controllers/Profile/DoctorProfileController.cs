@@ -42,6 +42,8 @@ public class DoctorProfileController(
 			ProfileImagePath = profile.ProfileImagePath,
 			Category = doctor.DoctorProperties.Category.CategoryName,
 			Bio = doctor.DoctorProperties.Bio!
+			ExperienceYears = doctor.DoctorProperties.ExperienceYears,
+
 		});
 	}
 
