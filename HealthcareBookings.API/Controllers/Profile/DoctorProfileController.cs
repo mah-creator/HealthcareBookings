@@ -64,7 +64,8 @@ public class DoctorProfileController(
 			Gender = user.Profile.Gender,
 			ProfileImagePath = user.Profile.ProfileImagePath,
 			Category = user.DoctorProperties.Category.CategoryName,
-			Bio = user.DoctorProperties.Bio!
+			Bio = user.DoctorProperties.Bio!,
+			ExperienceYears = user.DoctorProperties.ExperienceYears,
 		});
 	}
 
@@ -92,7 +93,8 @@ public class DoctorProfileController(
 			Gender = profile.Gender,
 			ProfileImagePath = profile.ProfileImagePath,
 			Category = doctor.DoctorProperties.Category.CategoryName,
-			Bio = doctor.DoctorProperties.Bio!
+			Bio = doctor.DoctorProperties.Bio!,
+			ExperienceYears = doctor.DoctorProperties.ExperienceYears,
 		});
 	}
 }
@@ -105,4 +107,5 @@ internal record DoctorProfileDto
 	public string ProfileImagePath { get; set; }
 	public string Category { get; set; }
 	public string Bio { get; set; }
+	public int ExperienceYears { get; set; }
 }

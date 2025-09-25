@@ -42,7 +42,7 @@ public class UpdateDoctorProfileCommandHnadler(CurrentUserService currentUserSer
 
 			user.Profile.ProfileImagePath = relativePath;
 
-			await dbContext.SaveChangesAsync(cancellationToken);
 		}
+		await dbContext.SaveChangesAsync(cancellationToken);
 	}
 }
