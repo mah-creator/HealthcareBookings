@@ -46,7 +46,7 @@ public class PatientProfileController(IMediator mediator,
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(GetPatientProfileQuery), StatusCodes.Status200OK)]
 	public async Task<IActionResult> GetPatientProfile()
 	{

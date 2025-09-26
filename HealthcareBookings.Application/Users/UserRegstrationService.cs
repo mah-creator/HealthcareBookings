@@ -19,7 +19,7 @@ public class UserRegistrationService(UserManager<User> userManager,
 
 		if (dbUser is not null)
 		{
-			throw new InvalidHttpActionException($"Username '{email}' is already taken.");
+			throw new ValidationException([new() { Code = "DuplicateUserName", Description = $"Username '{email}' is already taken." }]);
 		}
 
 		var passwordValidationResult = await passwordValidator.ValidateAsync(userManager, dbUser!, password);
