@@ -91,7 +91,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				}
 			}).ToList();
 
-		return Ok(appointments);
+		return Ok(appointments?? []);
 	}
 
 	[HttpGet("patient")]
@@ -99,8 +99,8 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	public async Task<IActionResult> GetPatientAppointments(string appointmentStatus)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var appointments = patient.PatientProperties.Appointments
-			.Where(a => a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase))
+		var appointments = patient?.PatientProperties?.Appointments
+			?.Where(a => a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase))
 
 			.Select(a => new PatientAppointmentDto
 			{
@@ -113,7 +113,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				DoctorCategory = a.Doctor.Category.CategoryName
 			}).ToList();
 
-		return Ok(appointments);
+		return Ok(appointments ?? []);
 	}
 
 	[HttpDelete("cancel/{appointmentId}")]

@@ -5,6 +5,7 @@ using HealthcareBookings.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace HealthcareBookings.API.Controllers.Schedules;
 
@@ -32,13 +33,13 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			.Where(s => s.Date == date)
 			.FirstOrDefault();
 
-		return Ok(schedule?.TimeSlots.Select(ts => new TimeSlotDto
+		return Ok(schedule?.TimeSlots?.Select(ts => new TimeSlotDto
 		{
 			Id = ts.SlotID,
 			StartTime = ts.StartTime,
 			EndTime = ts.EndTime,
 			IsFree = ts.IsFree
-		}));
+		}) ?? []);
 	}
 
 	[HttpPost("{doctorId}")]

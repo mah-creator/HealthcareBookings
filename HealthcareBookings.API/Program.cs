@@ -10,9 +10,12 @@ using HealthcareBookings.Application.CustomIdentity;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddInfrastucture(builder.Configuration);
@@ -27,6 +30,9 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
 	.Configure(options => {
 		options.BearerTokenExpiration = TimeSpan.FromDays(365);
 	});
+
+builder.Services.AddFluentValidationRulesToSwagger();
+
 
 var app = builder.Build();
 

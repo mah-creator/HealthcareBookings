@@ -3,6 +3,7 @@ using FluentValidation;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using MicroElements.OpenApi.FluentValidation;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Resturants.API.Extensions;
 
@@ -21,7 +22,7 @@ public static class WebApplicationBuilderExtension
 					.AllowAnyHeader()
 					.AllowAnyMethod()));
 
-		builder.Services.AddControllers()
+		builder.Services.AddControllers(o => o.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>())
 			.AddJsonOptions(o =>
 			{
 				o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
@@ -37,6 +38,7 @@ public static class WebApplicationBuilderExtension
 
 		builder.Services.AddSwaggerGen(c =>
 		{
+			c.SchemaFilter<FluentValidationSchemaFilter>();
 			c.SwaggerDoc("v1", new OpenApiInfo { Title = "Test", Version = "v1" });
 			c.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
 			{
