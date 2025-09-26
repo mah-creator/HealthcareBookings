@@ -39,7 +39,8 @@ public class ClinicProfileController(
 	}
 
 	[HttpPatch("profileimage")]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> UpdateClinicProfileImage(IFormFile image)
 	{
 		var clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
@@ -47,7 +48,7 @@ public class ClinicProfileController(
 		
 		if (clinic is null)
 		{
-			return BadRequest(new ProblemDetails() { Title = "Clinic profile wasn't created" });
+			return BadRequest("Clinic profile wasn't created yet");
 		}
 
 		var imagePath = await fileUploadService.UploadWebAsset(image);
@@ -60,8 +61,8 @@ public class ClinicProfileController(
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(ClinicProfileDto), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> GetClinicProfile()
 	{
 		var  clinicAdmin = await currentUserEntityService.GetCurrentClinicAdmin();
@@ -69,7 +70,7 @@ public class ClinicProfileController(
 
 		if (clinic is null)
 		{
-			return BadRequest(new ProblemDetails() { Title = "Clinic profile wasn't created" });
+			return BadRequest("Clinic profile wasn't created yet");
 		}
 
 		return Ok(new ClinicProfileDto

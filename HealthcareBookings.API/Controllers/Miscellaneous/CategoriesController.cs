@@ -20,7 +20,7 @@ public class CategoriesController(IAppDbContext dbContext) : ControllerBase
 				Name = c.CategoryName,
 				LogoPath = c.CategoryLogoPath!
 			}))
-			: BadRequest();
+			: BadRequest("No categories found");
 	}
 }
 

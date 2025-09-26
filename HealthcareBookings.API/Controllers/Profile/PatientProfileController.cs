@@ -54,7 +54,7 @@ public class PatientProfileController(IMediator mediator,
 
 		if (profile is null)
 		{
-			return BadRequest(new ProblemDetails() { Title = "The user has no profile" });
+			return BadRequest("The user has no profile");
 		}
 
 		return Ok(new GetPatientProfileQuery

@@ -14,7 +14,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 {
 	[HttpGet("{doctorId}")]
 	[ProducesResponseType(typeof(List<TimeSlotDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(string), 400)]
 	public async Task<IActionResult> GetSchedule(string doctorId, [Required] DateOnly date)
 	{
 		var doctor = dbContext.Doctors
@@ -25,7 +25,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 		if (doctor == null)
 		{
-			return NotFound("doctor doesn't exist");
+			return BadRequest($"Doctor with id {doctorId} wasn't found");
 		}
 
 		var schedule = doctor.Schedules
@@ -43,7 +43,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 	[HttpPost("{doctorId}")]
 	[ProducesResponseType(typeof(List<TimeSlotDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> CreateTimeSlot(
 		string doctorId,
 		[Required] DateOnly date,
@@ -60,7 +60,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 		if (doctor == null)
 		{
-			return BadRequest("doctor doesn't exist");
+			return BadRequest($"Doctor with id '{doctorId}' wasn't found");
 		}
 
 		var schedule = doctor.Schedules.Where(s => s.Date == date)?.FirstOrDefault();
@@ -76,10 +76,10 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			doctor.Schedules.Add(schedule);
 		}
 
-		var timeSlot = schedule.TimeSlots.Where(s => s.StartTime == start || s.EndTime == end)?.FirstOrDefault();
+		var timeSlot = schedule.TimeSlots.Where(s => timeWithin(s.StartTime, s.EndTime, start) || timeWithin(s.StartTime, s.EndTime, start))?.FirstOrDefault();
 
 		if (timeSlot != null)
-			return BadRequest("An entry with the same start/end date exists");
+			return BadRequest($"Doctor already has a schedule entry at {date}, {timeSlot.StartTime} - {timeSlot.EndTime}");
 
 		schedule.TimeSlots.Add(new TimeSlot()
 		{
@@ -98,6 +98,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			IsFree = ts.IsFree
 		}));
 	}
+	private bool timeWithin(TimeOnly start, TimeOnly end, TimeOnly time) => time < end && time > start;
 }
 
 internal struct TimeSlotDto
@@ -108,3 +109,4 @@ internal struct TimeSlotDto
 	public bool IsFree { get; set; }
 
 }
+

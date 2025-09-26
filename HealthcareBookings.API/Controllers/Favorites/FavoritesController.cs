@@ -17,6 +17,8 @@ public class FavoritesController(
 	CurrentUserEntityService currentUserEntityService) : ControllerBase
 {
 	[HttpPost("clinics")]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(typeof(string), 400)]
 	public async Task<IActionResult> AddClinicToFavorites(string clinicId)
 	{
 		var clinic = dbContext.Clinics.Find(clinicId);
@@ -28,7 +30,7 @@ public class FavoritesController(
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		if (patient.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == clinic.ClinicID) != null)
 		{
-			return BadRequest($"You've already favored '{clinic.ClinicName}'");
+			return BadRequest($"You already added '{clinic.ClinicName}' to your favotites");
 		}
 
 		patient.PatientProperties.FavoriteClinics.Add(new()
@@ -43,10 +45,11 @@ public class FavoritesController(
 	}
 
 	[HttpGet("clinics")]
+	[ProducesResponseType(typeof(PagedList<FavoriteClinicDto>), 200)]
 	public async Task<IActionResult> GetFavoriteClinics(int page, int pageSize)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var favoriteClinics = patient.PatientProperties?.FavoriteClinics?.Select(c => new ClinicDto
+		var favoriteClinics = patient.PatientProperties?.FavoriteClinics?.Select(c => new FavoriteClinicDto
 		{
 			Id = c.ClinicID,
 			Name = c.Clinic.ClinicName,
@@ -54,10 +57,12 @@ public class FavoritesController(
 			Address = c.Clinic.Location.ToString()
 		}).AsQueryable();
 
-		return Ok(PagedList<ClinicDto>.CreatePagedList(favoriteClinics, page, pageSize));
+		return Ok(PagedList<FavoriteClinicDto>.CreatePagedList(favoriteClinics, page, pageSize));
 	}
 
 	[HttpDelete("clinics")]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(typeof(string), 400)]
 	public async Task<IActionResult> RemoveFavoriteClinic(string clinicId)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
@@ -75,6 +80,8 @@ public class FavoritesController(
 	}
 
 	[HttpPost("doctors")]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(typeof(string), 400)]
 	public async Task<IActionResult> AddDoctorToFavorites(string doctorId)
 	{
 		var doctor = dbContext.Doctors
@@ -88,7 +95,7 @@ public class FavoritesController(
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		if (patient.PatientProperties.FavoriteDoctors.Find(fd => fd.DoctorID == doctor.DoctorUID) != null)
 		{
-			return BadRequest($"You've already favored '{doctor.Account.Profile.Name}'");
+			return BadRequest($"You've already added '{doctor.Account.Profile.Name}' to your favorites");
 		}
 
 		patient.PatientProperties.FavoriteDoctors.Add(new()
@@ -103,10 +110,11 @@ public class FavoritesController(
 	}
 
 	[HttpGet("doctors")]
+	[ProducesResponseType(typeof(PagedList<FavoriteDoctorDto>), 200)]
 	public async Task<IActionResult> GetFavoriteDoctors(int page, int pageSize)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var favoriteDoctors = patient.PatientProperties?.FavoriteDoctors?.AsQueryable().Select(d => new DoctorDto
+		var favoriteDoctors = patient.PatientProperties?.FavoriteDoctors?.AsQueryable().Select(d => new FavoriteDoctorDto
 		{
 			Id = d.DoctorID,
 			Name = d.Doctor.Account.Profile.Name,
@@ -117,10 +125,12 @@ public class FavoritesController(
 			Reviews = dbContext.Appointments.Where(a => a.DoctorID == d.DoctorID && a.Review != null).Count()
 		}).AsQueryable(); ;
 
-		return Ok(PagedList<DoctorDto>.CreatePagedList(favoriteDoctors, page, pageSize));
+		return Ok(PagedList<FavoriteDoctorDto>.CreatePagedList(favoriteDoctors, page, pageSize));
 	}
 
 	[HttpDelete("doctors")]
+	[ProducesResponseType(200)]
+	[ProducesResponseType(typeof(string), 200)]
 	public async Task<IActionResult> RemoveFavoriteDoctor(string doctorId)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
@@ -128,7 +138,7 @@ public class FavoritesController(
 
 		if (doctor == null)
 		{
-			return BadRequest("Clinic wasn't found");
+			return BadRequest("Doctor wasn't found");
 		}
 
 		patient.PatientProperties.FavoriteDoctors.Remove(doctor);
@@ -138,7 +148,7 @@ public class FavoritesController(
 	}
 }
 
-internal class ClinicDto
+internal class FavoriteClinicDto
 {
 	public string Id { get; set; }
 	public string Name { get; set; }
@@ -146,7 +156,7 @@ internal class ClinicDto
 	public string ClinicImagePath { get; set; }
 }
 
-internal class DoctorDto
+internal class FavoriteDoctorDto
 {
 	public string Id { get; set; }
 	public string Name { get; set; }

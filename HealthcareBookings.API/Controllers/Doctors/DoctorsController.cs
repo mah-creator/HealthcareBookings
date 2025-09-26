@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using HealthcareBookings.Application.Paging;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using HealthcareBookings.API.Controllers.Clinics;
 
 namespace HealthcareBookings.API.Controllers.Doctors;
 
@@ -26,7 +28,7 @@ public class DoctorsController(
 	private User patient = currentUserEntityService.GetCurrentPatient().Result;
 
 	[HttpGet]
-	[ProducesResponseType(typeof(PagedList<DoctorDto>), StatusCodes.Status200OK)]
+	[ProducesResponseType(typeof(PagedList<DoctorDto>), 200)]
 	public async Task<IActionResult> GetDoctors(GetDoctorsQuery query)
 	{
 		var doctors = await mediator.Send(query);
@@ -40,8 +42,7 @@ public class DoctorsController(
 	}
 
 	[HttpGet("{categoryId}")]
-	[ProducesResponseType(typeof(PagedList<DoctorDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(PagedList<DoctorDto>), 200)]
 	public async Task<IActionResult> GetDoctorsByCategory(string categoryId, GetDoctorsQuery query)
 	{
 		var doctors = await mediator.Send(query);
@@ -49,18 +50,18 @@ public class DoctorsController(
 			.Where(d => d.CategoryID == categoryId)
 			.Select(d => CreateDoctorDto(d, patient));
 
-		return doctorDtosByCategory.Any() ?
-			Ok(
+		return Ok(
 				PagedList<DoctorDto>
-				.CreatePagedList(doctorDtosByCategory, query.Page, query.PageSize))
-			: NotFound();
+				.CreatePagedList(doctorDtosByCategory, query.Page, query.PageSize));
 	}
 
 	[HttpGet("one")]
+	[ProducesResponseType(typeof(DoctorDto), 200)]
+	[ProducesResponseType(typeof(string), 400)]
 	public async Task<IActionResult> GetDoctorById(string doctorId)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var doctor = dbContext.Doctors?.Find(doctorId);
+		var doctor = dbContext.Doctors.Include(d => d.Appointments).ThenInclude(a => a.Review).FirstOrDefault(d => d.DoctorUID == doctorId);
 		if (doctor == null)
 			return BadRequest("Doctor wasn't found");
 

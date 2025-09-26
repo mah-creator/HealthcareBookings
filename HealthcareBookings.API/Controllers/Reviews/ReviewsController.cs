@@ -15,6 +15,8 @@ public class ReviewsController(IAppDbContext dbContext) : ControllerBase
 {
 	[HttpPost("{appointmentId}")]
 	[Authorize(Roles = UserRoles.Patient)]
+	[ProducesResponseType(typeof(string), 400)]
+	[ProducesResponseType(200)]
 	public async Task<IActionResult> AddReview(string appointmentId, string reviewText, float rating = 0)
 	{
 		if (rating > 5)
@@ -42,6 +44,7 @@ public class ReviewsController(IAppDbContext dbContext) : ControllerBase
 	}
 	
 	[HttpGet("{doctorId}")]
+	[ProducesResponseType(typeof(PagedList<ReviewDto>), 200)]
 	public async Task<IActionResult> GetReviews(string doctorId, [Required] int page = 1, [Required] int pageSize = 10)
 	{
 		var reviews = dbContext.Appointments?

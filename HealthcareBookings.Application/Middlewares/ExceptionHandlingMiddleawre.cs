@@ -30,10 +30,10 @@ public class ExceptionHandlingMiddleawre() : IMiddleware
 				Title = e.Message
 			});
 		}
-		//catch (Exception e)
-		//{
-		//	context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-		//	await context.Response.WriteAsync("Internal server error");
-		//}
+		catch (Exception e)
+		{
+			context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+			await context.Response.WriteAsync("Internal server error");
+		}
 	}
 }

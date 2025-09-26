@@ -15,6 +15,6 @@ public class BannersController(IAppDbContext dbContext) : ControllerBase
 	{
 		return dbContext.Banners.Any() ? 
 			Ok(dbContext.Banners.ToList()) : 
-			BadRequest();
+			BadRequest("No banners found");
 	}
 }
