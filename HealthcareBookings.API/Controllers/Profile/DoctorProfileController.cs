@@ -2,6 +2,7 @@
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +57,7 @@ public class DoctorProfileController(
 
 		if (user.Profile is null || user.DoctorProperties is null)
 		{
-			return BadRequest("The doctor has no profile");
+			throw new InvalidHttpActionException("The doctor has no profile");
 		}
 
 		return Ok(new DoctorProfileDto

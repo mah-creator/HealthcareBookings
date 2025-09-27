@@ -4,6 +4,7 @@ using HealthcareBookings.Application.StaticFiles.Uploads;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -48,7 +49,7 @@ public class ClinicProfileController(
 		
 		if (clinic is null)
 		{
-			return BadRequest("Clinic profile wasn't created yet");
+			throw new InvalidHttpActionException("Clinic profile wasn't created yet");
 		}
 
 		var imagePath = await fileUploadService.UploadWebAsset(image);
@@ -70,7 +71,7 @@ public class ClinicProfileController(
 
 		if (clinic is null)
 		{
-			return BadRequest("Clinic profile wasn't created yet");
+			throw new InvalidHttpActionException("Clinic profile wasn't created yet");
 		}
 
 		return Ok(new ClinicProfileDto

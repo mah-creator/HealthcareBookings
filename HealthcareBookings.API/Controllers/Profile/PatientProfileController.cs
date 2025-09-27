@@ -4,6 +4,7 @@ using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using HealthcareBookings.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -57,7 +58,7 @@ public class PatientProfileController(IMediator mediator,
 
 		if (profile is null)
 		{
-			return BadRequest("The user has no profile");
+			throw new InvalidHttpActionException("The user has no profile");
 		}
 
 		return Ok(new GetPatientProfileQuery

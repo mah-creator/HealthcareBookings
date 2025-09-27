@@ -14,6 +14,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using HealthcareBookings.API.Controllers.Clinics;
+using HealthcareBookings.Domain.Exceptions;
 
 namespace HealthcareBookings.API.Controllers.Doctors;
 
@@ -63,7 +64,7 @@ public class DoctorsController(
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		var doctor = dbContext.Doctors.Include(d => d.Appointments).ThenInclude(a => a.Review).FirstOrDefault(d => d.DoctorUID == doctorId);
 		if (doctor == null)
-			return BadRequest("Doctor wasn't found");
+			throw new InvalidHttpActionException("Doctor wasn't found");
 
 		return Ok(CreateDoctorDto(doctor, patient));
 	}

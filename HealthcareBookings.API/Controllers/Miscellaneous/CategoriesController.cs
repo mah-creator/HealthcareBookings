@@ -1,4 +1,5 @@
 ﻿using HealthcareBookings.Application.Data;
+using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthcareBookings.API.Controllers.Miscellaneous;
@@ -20,7 +21,7 @@ public class CategoriesController(IAppDbContext dbContext) : ControllerBase
 				Name = c.CategoryName,
 				LogoPath = c.CategoryLogoPath!
 			}))
-			: BadRequest("No categories found");
+			: throw new InvalidHttpActionException("No categories found");
 	}
 }
 

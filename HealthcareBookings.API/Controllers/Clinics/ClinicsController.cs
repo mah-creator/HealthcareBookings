@@ -4,6 +4,7 @@ using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,7 +47,7 @@ public class ClinicsController(
 
 		return clinic != null ? 
 			Ok(CreateClinicDto(clinic, patient))
-			: BadRequest("Clinic wasn't found");
+			: throw new InvalidHttpActionException("Clinic wasn't found");
 	}
 
 	[HttpGet("nearby")]

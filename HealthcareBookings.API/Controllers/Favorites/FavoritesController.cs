@@ -3,6 +3,7 @@ using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,13 +25,13 @@ public class FavoritesController(
 		var clinic = dbContext.Clinics.Find(clinicId);
 		if (clinic == null)
 		{
-			return BadRequest("Clinic wasn't found");
+			throw new InvalidHttpActionException("Clinic wasn't found");
 		}
 
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		if (patient.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == clinic.ClinicID) != null)
 		{
-			return BadRequest($"You already added '{clinic.ClinicName}' to your favotites");
+			throw new InvalidHttpActionException($"You already added '{clinic.ClinicName}' to your favotites");
 		}
 
 		patient.PatientProperties.FavoriteClinics.Add(new()
@@ -70,7 +71,7 @@ public class FavoritesController(
 		
 		if (clinic == null)
 		{
-			return BadRequest("Clinic wasn't found");
+			throw new InvalidHttpActionException("Clinic wasn't found");
 		}
 
 		patient.PatientProperties.FavoriteClinics.Remove(clinic);
@@ -89,13 +90,13 @@ public class FavoritesController(
 			.Where(d => d.DoctorUID == doctorId).FirstOrDefault();
 		if (doctor == null)
 		{
-			return BadRequest("Doctor wasn't found");
+			throw new InvalidHttpActionException("Doctor wasn't found");
 		}
 
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		if (patient.PatientProperties.FavoriteDoctors.Find(fd => fd.DoctorID == doctor.DoctorUID) != null)
 		{
-			return BadRequest($"You've already added '{doctor.Account.Profile.Name}' to your favorites");
+			throw new InvalidHttpActionException($"You've already added '{doctor.Account.Profile.Name}' to your favorites");
 		}
 
 		patient.PatientProperties.FavoriteDoctors.Add(new()
@@ -138,7 +139,7 @@ public class FavoritesController(
 
 		if (doctor == null)
 		{
-			return BadRequest("Doctor wasn't found");
+			throw new InvalidHttpActionException("Doctor wasn't found");
 		}
 
 		patient.PatientProperties.FavoriteDoctors.Remove(doctor);

@@ -1,5 +1,6 @@
 ﻿using HealthcareBookings.Application.Data;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HealthcareBookings.API.Controllers.Miscellaneous;
@@ -15,6 +16,6 @@ public class BannersController(IAppDbContext dbContext) : ControllerBase
 	{
 		return dbContext.Banners.Any() ? 
 			Ok(dbContext.Banners.ToList()) : 
-			BadRequest("No banners found");
+			throw new InvalidHttpActionException("No banners found");
 	}
 }

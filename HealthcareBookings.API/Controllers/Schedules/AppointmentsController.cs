@@ -2,6 +2,7 @@
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	{
 		var success = createAppointmentAction(doctorId, date, time, out string? errorMessage, out PatientAppointmentDto? a);
 
-		if (!success) return BadRequest(errorMessage);
+		if (!success) throw new InvalidHttpActionException(errorMessage);
 
 		return Ok(a);
 	}
@@ -44,11 +45,11 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		if (appointment == null || appointment.TimeSlot == null)
 		{
-			return BadRequest($"Appointment in quesiton wasn't found");
+			throw new InvalidHttpActionException($"Appointment in quesiton wasn't found");
 		}
 		if (!appointment.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase))
 		{
-			return BadRequest("Can't reschedule a completed/canceled appointment");
+			throw new InvalidHttpActionException("Can't reschedule a completed/canceled appointment");
 		}
 
 		appointment.TimeSlot.IsFree = true;
@@ -61,7 +62,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		if (!success)
 		{
 			transaction.RollbackToSavepoint("BeforeRescheduling");
-			return BadRequest(errorMessage);
+			throw new InvalidHttpActionException(errorMessage);
 		}
 		return Ok(a);
 	}
@@ -128,11 +129,11 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		if (appointment == null || appointment.TimeSlot == null)
 		{
-			return BadRequest("Appointment wasn't found");
+			throw new InvalidHttpActionException("Appointment wasn't found");
 		}
 		if (!appointment.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase))
 		{
-			return BadRequest("Can't cancel a completed/cancled appointment");
+			throw new InvalidHttpActionException("Can't cancel a completed/cancled appointment");
 		}
 
 		appointment.TimeSlot.IsFree = true;

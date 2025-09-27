@@ -2,6 +2,7 @@
 using FluentValidation.Validators;
 using HealthcareBookings.Application.Data;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
@@ -26,7 +27,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 		if (doctor == null)
 		{
-			return BadRequest($"Doctor with id {doctorId} wasn't found");
+			throw new InvalidHttpActionException($"Doctor with id {doctorId} wasn't found");
 		}
 
 		var schedule = doctor.Schedules
@@ -61,7 +62,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 		if (doctor == null)
 		{
-			return BadRequest($"Doctor with id '{doctorId}' wasn't found");
+			throw new InvalidHttpActionException($"Doctor with id '{doctorId}' wasn't found");
 		}
 
 		var schedule = doctor.Schedules.Where(s => s.Date == date)?.FirstOrDefault();
@@ -80,7 +81,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 		var timeSlot = schedule.TimeSlots.Where(s => timeWithin(s.StartTime, s.EndTime, start) || timeWithin(s.StartTime, s.EndTime, start))?.FirstOrDefault();
 
 		if (timeSlot != null)
-			return BadRequest($"Doctor already has a schedule entry at {date}, {timeSlot.StartTime} - {timeSlot.EndTime}");
+			throw new InvalidHttpActionException($"Doctor already has a schedule entry at {date}, {timeSlot.StartTime} - {timeSlot.EndTime}");
 
 		schedule.TimeSlots.Add(new TimeSlot()
 		{

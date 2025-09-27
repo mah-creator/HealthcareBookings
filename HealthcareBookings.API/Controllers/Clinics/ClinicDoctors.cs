@@ -3,6 +3,7 @@ using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ public class ClinicDoctors(IMediator mediator, CurrentUserEntityService currentU
 		var clinic = currentUserEntityService.GetCurrentClinicAdmin().Result.ClinicAdminProperties?.Clinic;
 
 		if (clinic == null)
-			return BadRequest("Clinic wasn't found");
+			throw new InvalidHttpActionException("Clinic wasn't found");
 
 		var doctors = await mediator.Send(query);
 		doctors = doctors?.Where(d => d.ClinicID == clinic.ClinicID);
