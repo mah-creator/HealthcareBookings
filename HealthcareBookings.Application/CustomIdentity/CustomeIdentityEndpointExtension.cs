@@ -81,7 +81,7 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
 			if (!result.Succeeded)
 			{
-				return TypedResults.Problem(result.ToString(), statusCode: StatusCodes.Status401Unauthorized);
+				return TypedResults.Problem(result.ToString(), title: "Failed to login", statusCode: StatusCodes.Status401Unauthorized);
 			}
 
 			// The signInManager already produced the needed response in the form of a cookie or bearer token.

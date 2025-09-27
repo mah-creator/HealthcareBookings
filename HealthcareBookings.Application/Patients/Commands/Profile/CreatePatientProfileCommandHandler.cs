@@ -27,7 +27,7 @@ public class CreatePatientProfileCommandHandler(
 	{
 		var currentUser = currentUserService.GetCurrentUser();
 
-		var user = context.Users.Include(u => u.Profile)
+		var user = context.Users.Include(u => u.Profile).Include(u => u.PatientProperties)
 			.Where(u => u.Id == currentUser.Id)
 			.ToList()
 			.First();
@@ -46,6 +46,21 @@ public class CreatePatientProfileCommandHandler(
 		{
 			relativePath = await fileUploadService.UploadWebAsset(request.ProfileImage);
 		}
+
+		user.PatientProperties = new Patient
+		{
+			PatientUID = user.Id,
+			Locations = [
+			new () {
+				Location = new (){
+					AddressText = request.LocationName,
+					Longitude = request.Longitude,
+					Latitude = request.Latitude
+				},
+				IsPrimary = true,
+				PatientUID = user.Id
+			}]
+		};
 
 		user.Profile = new ProfileInformation
 		{

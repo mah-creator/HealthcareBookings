@@ -35,11 +35,13 @@ public class PatientProfileController(IMediator mediator,
 		await mediator.Send(command);
 
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
+		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
 		return Ok(new GetPatientProfileQuery
 		{
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
+			Locations = patient?.Locations?.Select(l => new LocationDto { LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary }),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 
@@ -51,6 +53,7 @@ public class PatientProfileController(IMediator mediator,
 	public async Task<IActionResult> GetPatientProfile()
 	{
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
+		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
 
 		if (profile is null)
 		{
@@ -62,6 +65,7 @@ public class PatientProfileController(IMediator mediator,
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
+			Locations = patient?.Locations?.Select(l => new LocationDto { LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary}),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 	}

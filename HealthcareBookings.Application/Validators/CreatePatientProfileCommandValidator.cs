@@ -8,12 +8,16 @@ public class CreatePatientProfileCommandValidator : AbstractValidator<CreatePati
 {
 	public CreatePatientProfileCommandValidator()
 	{
-		RuleFor(p => p.Name)
-			.NotEmpty().WithMessage("Name is required");
-		RuleFor(p => p.Gender)
-			.NotEmpty().WithMessage("Gender is required");
+		//RuleFor(p => p.Name)
+		//	.NotEmpty().WithMessage("Name is required");
+		//RuleFor(p => p.Gender)
+		//	.NotEmpty().WithMessage("Gender is required");
 		RuleFor(p => p.DateOfBirth)
 			.NotNull().WithMessage("Date of birth is required");
+
+		RuleFor(p => p.LocationName).NotEmpty().WithMessage("Location name is required");
+		RuleFor(p => p.Longitude).NotEmpty().WithMessage("Longitude is required");
+		RuleFor(p => p.Latitude).NotEmpty().WithMessage("Latitude is required");
 
 		RuleFor(p => p.Gender)
 			.Must(g => g.ToUpper().Equals(Gender.NormalizedFemale)
