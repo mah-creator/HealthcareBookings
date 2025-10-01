@@ -1,10 +1,12 @@
 ﻿using HealthcareBookings.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace HealthcareBookings.Application.Data;
 
 public interface IAppDbContext
 {
+	public DatabaseFacade Database { get; }
 	public DbSet<User> Users { get; set; }
 	public DbSet<Patient> Patients { get; set; }
 	public DbSet<ClinicAdmin> ClinicAdmins { get; set; }

@@ -2,6 +2,7 @@
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,18 +16,20 @@ public class ReviewsController(IAppDbContext dbContext) : ControllerBase
 {
 	[HttpPost("{appointmentId}")]
 	[Authorize(Roles = UserRoles.Patient)]
+	[ProducesResponseType(typeof(string), 400)]
+	[ProducesResponseType(200)]
 	public async Task<IActionResult> AddReview(string appointmentId, string reviewText, float rating = 0)
 	{
 		if (rating > 5)
-			return BadRequest("Rating should be in the range 1-5");
+			throw new InvalidHttpActionException("Rating should be in the range 1-5");
 
 		var appointment = dbContext.Appointments.Include(a => a.Review).Include(a => a.Doctor)
 			.Where(a => a.AppointmentID == appointmentId).FirstOrDefault();
 
 		if (appointment == null)
-			return BadRequest("Appointment doesn't exist");
+			throw new InvalidHttpActionException("Appointment doesn't exist");
 		if (appointment.Review != null)
-			return BadRequest("Appointment was already reviewed");
+			throw new InvalidHttpActionException("Appointment was already reviewed");
 
 		appointment.Review = new AppointmentReview
 		{
@@ -42,6 +45,7 @@ public class ReviewsController(IAppDbContext dbContext) : ControllerBase
 	}
 	
 	[HttpGet("{doctorId}")]
+	[ProducesResponseType(typeof(PagedList<ReviewDto>), 200)]
 	public async Task<IActionResult> GetReviews(string doctorId, [Required] int page = 1, [Required] int pageSize = 10)
 	{
 		var reviews = dbContext.Appointments?

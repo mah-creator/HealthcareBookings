@@ -10,6 +10,8 @@ using HealthcareBookings.Application.CustomIdentity;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,8 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
 		options.BearerTokenExpiration = TimeSpan.FromDays(365);
 	});
 
+builder.Services.AddFluentValidationRulesToSwagger();
+
 var app = builder.Build();
 
 var scope = app.Services.CreateScope();
@@ -35,6 +39,8 @@ var seeder = scope.ServiceProvider.GetRequiredService<IAppSeeder>();
 await seeder.Seed();
 
 // Configure the HTTP request pipeline.
+
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -55,5 +61,7 @@ app.UseAuthorization();
 app.UseMiddleware<ExceptionHandlingMiddleawre>();
 
 app.MapControllers();
+
+app.UseCors("Development");
 
 app.Run();

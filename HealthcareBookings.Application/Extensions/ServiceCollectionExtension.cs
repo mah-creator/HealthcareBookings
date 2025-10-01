@@ -10,6 +10,7 @@ using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace HealthcareBookings.Application.Extensions;
 
@@ -33,6 +34,8 @@ public static class ServiceCollectionExtension
 			 ]
 		  );
 	   });
+
+		services.AddScoped<ILogger<ExceptionHandlingMiddleawre>, Logger<ExceptionHandlingMiddleawre>>();
 
 		services.AddScoped<ExceptionHandlingMiddleawre>();
 		services.AddScoped<UserRegistrationService>();

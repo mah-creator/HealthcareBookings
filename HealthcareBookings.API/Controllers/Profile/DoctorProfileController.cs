@@ -2,6 +2,7 @@
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -41,14 +42,14 @@ public class DoctorProfileController(
 			Gender = profile.Gender,
 			ProfileImagePath = profile.ProfileImagePath,
 			Category = doctor.DoctorProperties.Category.CategoryName,
-			Bio = doctor.DoctorProperties.Bio!
+			Bio = doctor.DoctorProperties.Bio!,
 			ExperienceYears = doctor.DoctorProperties.ExperienceYears,
 
 		});
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(DoctorProfileDto), StatusCodes.Status200OK)]
 	public async Task<IActionResult> GetDoctorProfile()
 	{
@@ -56,7 +57,7 @@ public class DoctorProfileController(
 
 		if (user.Profile is null || user.DoctorProperties is null)
 		{
-			return BadRequest(new ProblemDetails() { Title = "The doctor has no profile" });
+			throw new InvalidHttpActionException("The doctor has no profile");
 		}
 
 		return Ok(new DoctorProfileDto

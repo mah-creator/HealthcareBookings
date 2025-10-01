@@ -18,7 +18,7 @@ public class PatientIdentityController(
 	IAppDbContext dbContext) : ControllerBase
 {
     [HttpPost("registerPatient")]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> RegisterPatient([FromBody] RegisterRequest request)
     {
@@ -30,6 +30,6 @@ public class PatientIdentityController(
 		newUser.PatientProperties = new Patient { PatientUID = newUser.Id };
 
 		await dbContext.SaveChangesAsync();
-		return NoContent();
+		return Ok("Successfully registered, continue to set up your profile");
     }
 }

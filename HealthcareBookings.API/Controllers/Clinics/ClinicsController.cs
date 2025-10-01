@@ -4,6 +4,7 @@ using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,19 +40,18 @@ public class ClinicsController(
 
 	[HttpGet("{id}")]
 	[ProducesResponseType(typeof(ClinicDto), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(typeof(string), 400)]
 	public IActionResult GetClinicById(string id)
 	{
 		var clinic = dbContext.Clinics?.Find(id);
 
 		return clinic != null ? 
 			Ok(CreateClinicDto(clinic, patient))
-			: NotFound();
+			: throw new InvalidHttpActionException("Clinic wasn't found");
 	}
 
 	[HttpGet("nearby")]
 	[ProducesResponseType(typeof(PagedList<ClinicDto>), StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	public async Task<IActionResult> GetNearbyClinics([Required]float longitude, [Required]float latitude, GetClinicsQuery query)
 	{
 		var clinicsQuery = await mediator.Send(query);
@@ -61,12 +61,11 @@ public class ClinicsController(
 			.AsNoTracking()
 			.Select(c => CreateClinicDto(c, patient));
 
-		return clinicDtosQuery.Count() > 0 ? 
+		return 
 			Ok(
 				PagedList<ClinicDto>
 				.CreatePagedList(clinicDtosQuery, query.Page, query.PageSize)
-			)
-			: NotFound();
+			);
 	}
 	private static ClinicDto CreateClinicDto(Clinic c, User patient)
 	{

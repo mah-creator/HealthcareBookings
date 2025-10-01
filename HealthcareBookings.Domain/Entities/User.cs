@@ -19,8 +19,8 @@ public class User : IdentityUser
 public class ProfileInformation
 {
     public string UserID { get; set; }
-    public string Name { get; set; }
-    public string Gender { get; set; }
+    public string? Name { get; set; }
+    public string? Gender { get; set; }
     public DateOnly DOB { get; set; }
     public string ProfileImagePath { get; set; }
 }

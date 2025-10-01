@@ -4,6 +4,7 @@ using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using HealthcareBookings.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -35,26 +36,29 @@ public class PatientProfileController(IMediator mediator,
 		await mediator.Send(command);
 
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
+		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
 		return Ok(new GetPatientProfileQuery
 		{
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
+			Locations = patient?.Locations?.Select(l => new LocationDto { LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary }),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 
 	}
 
 	[HttpGet]
-	[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
 	[ProducesResponseType(typeof(GetPatientProfileQuery), StatusCodes.Status200OK)]
 	public async Task<IActionResult> GetPatientProfile()
 	{
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
+		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
 
 		if (profile is null)
 		{
-			return BadRequest(new ProblemDetails() { Title = "The user has no profile" });
+			throw new InvalidHttpActionException("The user has no profile");
 		}
 
 		return Ok(new GetPatientProfileQuery
@@ -62,6 +66,7 @@ public class PatientProfileController(IMediator mediator,
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
+			Locations = patient?.Locations?.Select(l => new LocationDto { LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary}),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 	}

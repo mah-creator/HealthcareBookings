@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using HealthcareBookings.Domain.Entities;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,5 +10,8 @@ public class CreatePatientProfileCommand : IRequest
 	public string Name { get; set; }
 	public string Gender { get; set; }
 	public DateOnly? DateOfBirth { get; set; }
+	public string LocationName { get; set; }
+	public float Longitude { get; set; }
+	public float Latitude { get; set; }
 	public IFormFile? ProfileImage { get; set; }
 }

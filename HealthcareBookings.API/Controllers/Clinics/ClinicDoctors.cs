@@ -3,6 +3,7 @@ using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Domain.Exceptions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,16 +16,18 @@ namespace HealthcareBookings.API.Controllers.Clinics;
 public class ClinicDoctors(IMediator mediator, CurrentUserEntityService currentUserEntityService) : ControllerBase
 {
 	[HttpGet]
+	[ProducesResponseType(typeof(PagedList<ClinicDoctorDto>), 200)]
+	[ProducesResponseType(typeof(string), 400)]
 	public async Task<IActionResult> GetClinicDoctors(GetDoctorsQuery query)
 	{
 		var clinic = currentUserEntityService.GetCurrentClinicAdmin().Result.ClinicAdminProperties?.Clinic;
 
 		if (clinic == null)
-			return BadRequest("Clinic wasn't found");
+			throw new InvalidHttpActionException("Clinic wasn't found");
 
 		var doctors = await mediator.Send(query);
 		doctors = doctors?.Where(d => d.ClinicID == clinic.ClinicID);
-		var doctorDtos = doctors?.AsEnumerable().Select(d => new DoctorDto
+		var doctorDtos = doctors?.AsEnumerable().Select(d => new ClinicDoctorDto
 		{
 			Id = d.DoctorUID,
 			Name = d.Account?.Profile?.Name,
@@ -37,19 +40,19 @@ public class ClinicDoctors(IMediator mediator, CurrentUserEntityService currentU
 
 		return
 			Ok(
-				PagedList<DoctorDto>
+				PagedList<ClinicDoctorDto>
 				.CreatePagedList(doctorDtos, query.Page, query.PageSize)
 			);
 	}
+	internal struct ClinicDoctorDto
+	{
+		public string Id { get; set; }
+		public string Name { get; set; }
+		public float Rating { get; set; }
+		public int Reviews { get; set; }
+		public int Experience { get; set; }
+		public int PatientCount { get; set; }
+		public string Bio { get; set; }
+	}
 }
 
-internal struct DoctorDto
-{
-	public string Id { get; set; }
-	public string Name { get; set; }
-	public float Rating { get; set; }
-	public int Reviews { get; set; }
-	public int Experience { get; set; }
-	public int PatientCount { get; set; }
-	public string Bio { get; set; }
-}
