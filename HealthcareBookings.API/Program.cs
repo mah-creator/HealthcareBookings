@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add services to the container.
 builder.Services.AddInfrastucture(builder.Configuration);
 builder.Services.AddApplication();
@@ -33,7 +32,6 @@ builder.Services.AddOptions<BearerTokenOptions>(IdentityConstants.BearerScheme)
 
 builder.Services.AddFluentValidationRulesToSwagger();
 
-
 var app = builder.Build();
 
 var scope = app.Services.CreateScope();
@@ -41,6 +39,8 @@ var seeder = scope.ServiceProvider.GetRequiredService<IAppSeeder>();
 await seeder.Seed();
 
 // Configure the HTTP request pipeline.
+
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -61,5 +61,7 @@ app.UseAuthorization();
 app.UseMiddleware<ExceptionHandlingMiddleawre>();
 
 app.MapControllers();
+
+app.UseCors("Development");
 
 app.Run();

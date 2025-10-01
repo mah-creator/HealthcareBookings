@@ -72,9 +72,10 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	public async Task<IActionResult> GetDoctorAppointments(string appointmentStatus)
 	{
 		var doctor = await currentUserEntityService.GetCurrentDoctor();
+		appointmentStatus = appointmentStatus?.ToLower();
 
 		var appointments = dbContext.Appointments
-			.Where(		a => a.Status.ToLower().Equals(appointmentStatus.ToLower())
+			.Where(		a => a.Status.ToLower().Equals(appointmentStatus)
 					&&	a.DoctorID == doctor.Id)
 			.Include(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
 			.Include(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
