@@ -42,7 +42,7 @@ public class PatientProfileController(IMediator mediator,
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
-			Locations = patient?.Locations?.Select(l => new LocationDto { LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary }),
+			Locations = patient?.Locations?.Select(l => new LocationDto {LocationId = l.ID, LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary }),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 
@@ -56,9 +56,9 @@ public class PatientProfileController(IMediator mediator,
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
 		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
 
-		if (profile is null)
+		if (profile is null || patient is null)
 		{
-			throw new InvalidHttpActionException("The user has no profile");
+			throw new InvalidHttpActionException("Your patient profile wasn't set up correctlu");
 		}
 
 		return Ok(new GetPatientProfileQuery
@@ -66,7 +66,7 @@ public class PatientProfileController(IMediator mediator,
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
-			Locations = patient?.Locations?.Select(l => new LocationDto { LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary}),
+			Locations = patient.Locations.Select(l => new LocationDto {LocationId = l.ID, LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary}),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 	}

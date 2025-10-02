@@ -14,6 +14,7 @@ public class GetPatientProfileQuery
 
 public struct LocationDto
 {
+	public string LocationId { get; set; }
 	public string? LocationName { get; set; }
 	public float? Longitude { get; set; }
 	public float? Latitude { get; set; }

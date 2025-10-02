@@ -1,4 +1,6 @@
 ﻿using HealthcareBookings.Application.Data;
+using HealthcareBookings.Application.Doctors.Extensions;
+using HealthcareBookings.Application.Extensions;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
@@ -85,6 +87,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				Date = a.TimeSlot.Schedule.Date,
 				Start = a.TimeSlot.StartTime,
 				End = a.TimeSlot.EndTime,
+				IsOverdue = isOverdue(a),
 				PatientInfo = new PatientAppointmentInfo()
 				{
 					Name = a.Patient.Account.Profile.Name,
@@ -112,7 +115,8 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				End = a.TimeSlot.EndTime,
 				ClinicName = a.Doctor.Clinic.ClinicName,
 				DoctorName = a.Doctor.Account.Profile.Name,
-				DoctorCategory = a.Doctor.Category.CategoryName
+				DoctorCategory = a.Doctor.Category.CategoryName,
+				IsOverdue = isOverdue(a)
 			}).ToList();
 
 		return Ok(appointments ?? []);
@@ -144,6 +148,41 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		return Ok();
 	}
 
+	[HttpPost("complete/{appointmentId}")]
+	public async Task<Results<Ok<AppointmentDto>, BadRequest<string>>> CompleteAppointment(string appointmentId)
+	{
+		var a = dbContext.Appointments
+			.Include(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
+			.Include(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
+			.FirstOrDefault(a => a.AppointmentID == appointmentId);
+
+		if (a == null) 
+			throw new InvalidHttpActionException("Appointment wasn't found");
+
+		if (!a.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase))
+			throw new InvalidHttpActionException("Can't complete a cancled/completed appointmnet");
+
+		if (!isOverdue(a))
+			throw new InvalidHttpActionException("Appointmnet hasn't finished yet");
+
+		a.Status = AppointmentStatus.Completed;
+		await dbContext.SaveChangesAsync();
+
+		return TypedResults.Ok(new AppointmentDto
+		{
+			AppointmentId = a.AppointmentID,
+			Date = a.TimeSlot.Schedule.Date,
+			Start = a.TimeSlot.StartTime,
+			End = a.TimeSlot.EndTime,
+			IsOverdue = isOverdue(a),
+			PatientInfo = new PatientAppointmentInfo()
+			{
+				Name = a.Patient.Account.Profile.Name,
+				Age = DateTime.Now.Year - a.Patient.Account.Profile.DOB.Year,
+				Gender = a.Patient.Account.Profile.Gender
+			}
+		});
+	}
 	private  bool createAppointmentAction(string doctorId, DateOnly date, TimeOnly time,  out string? message, out PatientAppointmentDto? a)
 	{
 		message = null;
@@ -163,9 +202,9 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			.Include(s => s.TimeSlots)
 			.FirstOrDefault();
 
-		var timeSlot = schedule?.TimeSlots.FirstOrDefault(s => s.StartTime == time);
+		var timeSlot = schedule?.TimeSlots.FirstOrDefault(s => s.StartTime == time && s.IsFree);
 
-		if (timeSlot == null || !timeSlot.IsFree)
+		if (timeSlot == null)
 		{
 			message = $"Doctor isn't available at {date}, {time}";
 			return false;
@@ -173,39 +212,40 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		var patient =  currentUserEntityService.GetCurrentPatient().Result;
 		var patientAppointments = patient.PatientProperties.Appointments;
-		if (patientAppointments.Where(a => a.TimeSlotID == timeSlot.SlotID).Any())
+		if (patientAppointments.Where(a => a.TimeSlotID == timeSlot.SlotID && a.Status == AppointmentStatus.Upcoming && !isOverdue(a)).Any())
 		{
-			message = $"You already have an appointment at {date}, {time}";
+			message = $"You already have an appointment at {schedule.Date}, {timeSlot.StartTime} - {timeSlot.EndTime}";
 			return false;
 		}
-		if (patientAppointments.Where(a => a.DoctorID == doctorId).Any() && patientAppointments.Where(a => a.DoctorID == doctorId).Any(a => a.Status.Equals(AppointmentStatus.Upcoming) && isNotPast(a)))
+		if (patientAppointments.Where(a => a.DoctorID == doctorId).Any() && patientAppointments.Where(a => a.DoctorID == doctorId).Any(a => a.Status.Equals(AppointmentStatus.Upcoming) && !isOverdue(a)))
 		{
 			message = $"You already have an appointment with the doctor";
 			return false;
 		}
 
 
-		patientAppointments.Add(new()
+		var appointment = new Appointment
 		{
 			PatientID = patient.Id,
 			DoctorID = doctorId,
 			TimeSlotID = timeSlot.SlotID,
-		});
+		};
 		timeSlot.IsFree = false;
+		patientAppointments.Add(appointment);
 		dbContext.SaveChangesAsync();
 
-		var newAppointment = patientAppointments.Last();
+		var doctor = dbContext.Doctors.IncludeAll().FirstOrDefault(d => d.DoctorUID == doctorId);
 
 		a = new PatientAppointmentDto
 
 		{
-			AppointmentId = newAppointment.AppointmentID,
-			Date = newAppointment.TimeSlot.Schedule.Date,
-			Start = newAppointment.TimeSlot.StartTime,
-			End = newAppointment.TimeSlot.EndTime,
-			ClinicName = newAppointment.Doctor.Clinic.ClinicName,
-			DoctorName = newAppointment.Doctor.Account.Profile.Name,
-			DoctorCategory = newAppointment.Doctor.Category.CategoryName
+			AppointmentId = appointment.AppointmentID,
+			Date = schedule.Date,
+			Start = timeSlot.StartTime,
+			End = timeSlot.EndTime,
+			ClinicName = doctor.Clinic.ClinicName,
+			DoctorName = doctor.Account.Profile.Name,
+			DoctorCategory = doctor.Category.CategoryName
 		};
 
 		return true; 
@@ -215,6 +255,12 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	{
 		var d = new DateTime(a.TimeSlot.Schedule.Date, a.TimeSlot.StartTime);
 		return d > DateTime.Now.AddHours(24);
+	}
+
+	private static bool isOverdue(Appointment a)
+	{
+		var d = new DateTime(a.TimeSlot.Schedule.Date, a.TimeSlot.EndTime);
+		return d <= DateTime.Now;
 	}
 }
 
@@ -227,18 +273,20 @@ internal struct PatientAppointmentDto
 	public string ClinicName { get; set; }
 	public string DoctorName { get; set; }
 	public string DoctorCategory { get; set; }
+	public bool IsOverdue { get; set; }
 }
 
-internal struct AppointmentDto
+public struct AppointmentDto
 {
 	public string AppointmentId { get; set; }
 	public DateOnly Date { get; set; }
 	public TimeOnly Start { get; set; }
 	public TimeOnly End { get; set; }
+	public bool IsOverdue { get; set; }
 	public PatientAppointmentInfo PatientInfo { get; set; }
 }
 
-internal struct PatientAppointmentInfo
+public struct PatientAppointmentInfo
 {
 	public string Name { get; set; }
 	public int Age { get; set; }
