@@ -1,5 +1,6 @@
 ﻿using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Doctors.Extensions;
+using HealthcareBookings.Application.Extensions;
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
