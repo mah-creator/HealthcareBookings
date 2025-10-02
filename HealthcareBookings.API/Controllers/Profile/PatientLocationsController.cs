@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HealthcareBookings.API.Controllers.Profile;
 
 [Controller]
-[Route("/api/profile/patient/locations")]
+[Route("/api/locations")]
 [Authorize(Roles = UserRoles.Patient)]
 public class PatientLocationsController(CurrentUserEntityService currentUser, IAppDbContext dbContext) : ControllerBase
 {
