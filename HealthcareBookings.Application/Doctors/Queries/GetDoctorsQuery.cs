@@ -20,6 +20,7 @@ public struct DoctorDto
 {
 	public string Id { get; set; }
 	public string Name { get; set; }
+	public string Image { get; set; }
 	public bool IsFavorite { get; set; }
 	public string ClinicName { get; set; }
 	public string ClinicLocation { get; set; }

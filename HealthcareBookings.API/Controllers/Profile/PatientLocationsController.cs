@@ -15,6 +15,23 @@ namespace HealthcareBookings.API.Controllers.Profile;
 [Authorize(Roles = UserRoles.Patient)]
 public class PatientLocationsController(CurrentUserEntityService currentUser, IAppDbContext dbContext) : ControllerBase
 {
+	[HttpGet]
+	public async Task<Results<Ok<IEnumerable<LocationDto>>, BadRequest<ProblemDetails>>> GetPatientLocaitons()
+	{
+		var patientLocations = currentUser.GetCurrentPatient().Result?.PatientProperties?.Locations;
+
+		if (patientLocations == null)
+			throw new InvalidHttpActionException("Your patient profile wasn't setup correctly");
+
+		return TypedResults.Ok(patientLocations.Select(l => new LocationDto
+		{
+			LocationId = l.ID,
+			LocationName = l.Location.AddressText,
+			Longitude = l.Location.Longitude,
+			Latitude = l.Location.Latitude,
+			IsPrimary = l.IsPrimary
+		}));
+	}
 	[HttpPost]
 	public async Task<Results<Ok<IEnumerable<LocationDto>>, BadRequest<ProblemDetails>>> AddPatientLocation([FromBody] LocationRequest location)
 	{

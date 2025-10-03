@@ -12,7 +12,7 @@ public class PagedList<T>
 	public bool HasNext => Page * PageSize < TotalCount;
 	public bool HasPrevious => Page > 1;
 
-	public static PagedList<T> CreatePagedList(IQueryable<T>? query , int page = 1, int pageSize = 5)
+	public static PagedList<T> CreatePagedList(IQueryable<T>? query , int page = 1, int pageSize = 20)
 	{
 		var items = query?
 			.Skip((page - 1) * pageSize)

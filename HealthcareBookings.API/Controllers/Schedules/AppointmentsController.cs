@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Application.Data;
+﻿using HealthcareBookings.Application.Constants;
+using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Doctors.Extensions;
 using HealthcareBookings.Application.Extensions;
 using HealthcareBookings.Application.Users;
@@ -117,7 +118,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				ClinicLocation = a.Doctor.Clinic.Location.AddressText,
 				DoctorName = a.Doctor.Account.Profile.Name,
 				DoctorCategory = a.Doctor.Category.CategoryName,
-				DoctorImage = a.Doctor.Account.Profile.ProfileImagePath,
+				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
 				IsOverdue = isOverdue(a)
 			}).ToList();
 

@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Application.Data;
+﻿using HealthcareBookings.Application.Constants;
+using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
@@ -54,7 +55,7 @@ public class FavoritesController(
 		{
 			Id = c.ClinicID,
 			Name = c.Clinic.ClinicName,
-			ClinicImagePath = c.Clinic.ImagePath,
+			ClinicImagePath = ApiSettings.BaseUrl + c.Clinic.ImagePath,
 			Address = c.Clinic.Location.ToString()
 		}).AsQueryable();
 
@@ -119,7 +120,7 @@ public class FavoritesController(
 		{
 			Id = d.DoctorID,
 			Name = d.Doctor.Account.Profile.Name,
-			DoctorImagePath = d.Doctor.Account.Profile.ProfileImagePath,
+			DoctorImagePath = ApiSettings.BaseUrl + d.Doctor.Account.Profile.ProfileImagePath,
 			ClinicName = d.Doctor.Clinic.ClinicName,
 			ClinicCity = d.Doctor.Clinic.Location.City,
 			Rating = d.Doctor.Rating,
