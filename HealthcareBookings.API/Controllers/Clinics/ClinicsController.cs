@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using static HealthcareBookings.Application.Utils.GeoUtils;
 
 namespace HealthcareBookings.API.Controllers.Clinics;
 
@@ -29,7 +30,7 @@ public class ClinicsController(
 	{
 		var clinicsQuery = await mediator.Send(query);
 		var clinicsDtoQuery = clinicsQuery
-			.Select(c => CreateClinicDto(c, patient));
+			.Select(c => CreateClinicDto(c, patient, null, null));
 
 		return 
 			Ok(
@@ -46,7 +47,7 @@ public class ClinicsController(
 		var clinic = dbContext.Clinics?.Find(id);
 
 		return clinic != null ? 
-			Ok(CreateClinicDto(clinic, patient))
+			Ok(CreateClinicDto(clinic, patient, null, null))
 			: throw new InvalidHttpActionException("Clinic wasn't found");
 	}
 
@@ -56,18 +57,17 @@ public class ClinicsController(
 	{
 		var clinicsQuery = await mediator.Send(query);
 		var clinicDtosQuery = clinicsQuery
-			.Where(c => Math.Abs(c.Location.Longitude - longitude) <= 3*0.0115
-					 && Math.Abs(c.Location.Latitude - latitude) <= 3*0.009)
 			.AsNoTracking()
-			.Select(c => CreateClinicDto(c, patient));
+			.Select(c => CreateClinicDto(c, patient, latitude, longitude)).AsEnumerable();
+		var nearby = clinicDtosQuery.Where(c => c.DestanceKm != null && c.DestanceKm <= 3.0);
 
 		return 
 			Ok(
 				PagedList<ClinicDto>
-				.CreatePagedList(clinicDtosQuery, query.Page, query.PageSize)
+				.CreatePagedList(nearby.AsQueryable(), query.Page, query.PageSize)
 			);
 	}
-	private static ClinicDto CreateClinicDto(Clinic c, User patient)
+	private static ClinicDto CreateClinicDto(Clinic c, User patient, float? latitude, float? longitude)
 	{
 		return new ClinicDto
 		{
@@ -75,7 +75,8 @@ public class ClinicsController(
 			Name = c.ClinicName,
 			Description = c.ClinicDescription!,
 			Location = c.Location,
-			IsFavorite = patient.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == c.ClinicID) is not null
+			IsFavorite = patient.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == c.ClinicID) is not null,
+			DestanceKm = DistanceKm(c.Location.Latitude, c.Location.Longitude, ((double?)latitude), ((double?)longitude))
 		};
 	}
 }
@@ -86,5 +87,6 @@ internal struct ClinicDto
 	public string Name { get; set; }
 	public string Description { get; set; }
 	public bool IsFavorite { get; set; }
+	public double? DestanceKm { get; set; }
 	public Location Location { get; set; }
 }
