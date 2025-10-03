@@ -114,8 +114,10 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				Start = a.TimeSlot.StartTime,
 				End = a.TimeSlot.EndTime,
 				ClinicName = a.Doctor.Clinic.ClinicName,
+				ClinicLocation = a.Doctor.Clinic.Location.AddressText,
 				DoctorName = a.Doctor.Account.Profile.Name,
 				DoctorCategory = a.Doctor.Category.CategoryName,
+				DoctorImage = a.Doctor.Account.Profile.ProfileImagePath,
 				IsOverdue = isOverdue(a)
 			}).ToList();
 
@@ -244,7 +246,9 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			Start = timeSlot.StartTime,
 			End = timeSlot.EndTime,
 			ClinicName = doctor.Clinic.ClinicName,
+			ClinicLocation = doctor.Clinic.Location.AddressText,
 			DoctorName = doctor.Account.Profile.Name,
+			DoctorImage = doctor.Account.Profile.ProfileImagePath,
 			DoctorCategory = doctor.Category.CategoryName
 		};
 
@@ -271,8 +275,10 @@ internal struct PatientAppointmentDto
 	public TimeOnly Start { get; set; }
 	public TimeOnly End { get; set; }
 	public string ClinicName { get; set; }
+	public string ClinicLocation { get; set; }
 	public string DoctorName { get; set; }
 	public string DoctorCategory { get; set; }
+	public string DoctorImage { get; set; }
 	public bool IsOverdue { get; set; }
 }
 
