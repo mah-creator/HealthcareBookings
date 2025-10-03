@@ -80,7 +80,8 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		var appointments = dbContext.Appointments
 			.Where(		a => a.Status.ToLower().Equals(appointmentStatus)
-					&&	a.DoctorID == doctor.Id)
+					&&	a.DoctorID == doctor.Id
+					&&	!isOverdue(a))
 			.Include(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
 			.Include(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
 			.Select(a => new AppointmentDto
@@ -96,7 +97,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 					Age = DateTime.Now.Year - a.Patient.Account.Profile.DOB.Year,
 					Gender = a.Patient.Account.Profile.Gender
 				}
-			}).OrderByDescending(a => new DateTime(a.Date, a.Start)).AsQueryable();
+			}).OrderBy(a => new DateTime(a.Date, a.Start)).AsQueryable();
 
 		if (page != 0 && pageSize != 0)
 			return Ok(PagedList<AppointmentDto>.CreatePagedList(appointments, page, pageSize));
@@ -110,7 +111,9 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		var appointments = patient?.PatientProperties?.Appointments
-			?.Where(a => a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase))
+			?.Where(a => 
+				a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase)
+				& !isOverdue(a))
 
 			.Select(a => new PatientAppointmentDto
 			{
@@ -124,7 +127,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				DoctorCategory = a.Doctor.Category.CategoryName,
 				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
 				IsOverdue = isOverdue(a)
-			}).OrderByDescending(a => new DateTime(a.Date, a.Start)).AsQueryable();
+			}).OrderBy(a => new DateTime(a.Date, a.Start)).AsQueryable();
 
 		if (page != 0 && pageSize != 0)
 			return Ok(PagedList<PatientAppointmentDto>.CreatePagedList(appointments, page, pageSize));
