@@ -1,4 +1,5 @@
 ﻿using HealthcareBookings.Application.Clinics.Queries;
+using HealthcareBookings.Application.Constants;
 using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
@@ -73,6 +74,7 @@ public class ClinicsController(
 		{
 			Id = c.ClinicID,
 			Name = c.ClinicName,
+			Image = ApiSettings.BaseUrl + c.ImagePath,
 			Description = c.ClinicDescription!,
 			Location = c.Location,
 			IsFavorite = patient.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == c.ClinicID) is not null,
@@ -85,6 +87,7 @@ internal struct ClinicDto
 {
 	public string Id { get; set; }
 	public string Name { get; set; }
+	public string Image {  get; set; }
 	public string Description { get; set; }
 	public bool IsFavorite { get; set; }
 	public double? DestanceKm { get; set; }
