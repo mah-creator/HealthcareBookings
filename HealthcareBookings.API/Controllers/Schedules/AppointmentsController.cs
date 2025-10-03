@@ -2,6 +2,7 @@
 using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Doctors.Extensions;
 using HealthcareBookings.Application.Extensions;
+using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
@@ -72,7 +73,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 	[HttpGet("doctor")]
 	[Authorize(Roles = UserRoles.Doctor)]
-	public async Task<IActionResult> GetDoctorAppointments(string appointmentStatus)
+	public async Task<IActionResult> GetDoctorAppointments(string appointmentStatus, int page = 0, int pageSize = 0)
 	{
 		var doctor = await currentUserEntityService.GetCurrentDoctor();
 		appointmentStatus = appointmentStatus?.ToLower();
@@ -95,14 +96,17 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 					Age = DateTime.Now.Year - a.Patient.Account.Profile.DOB.Year,
 					Gender = a.Patient.Account.Profile.Gender
 				}
-			}).ToList();
+			}).OrderByDescending(a => new DateTime(a.Date, a.Start)).AsQueryable();
 
-		return Ok(appointments?? []);
+		if (page != 0 && pageSize != 0)
+			return Ok(PagedList<AppointmentDto>.CreatePagedList(appointments, page, pageSize));
+		else
+			return Ok(appointments?.ToList() ?? []);
 	}
 
 	[HttpGet("patient")]
 	[Authorize(Roles = UserRoles.Patient)]
-	public async Task<IActionResult> GetPatientAppointments(string appointmentStatus)
+	public async Task<IActionResult> GetPatientAppointments(string appointmentStatus, int page = 0, int pageSize = 0)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		var appointments = patient?.PatientProperties?.Appointments
@@ -120,9 +124,12 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				DoctorCategory = a.Doctor.Category.CategoryName,
 				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
 				IsOverdue = isOverdue(a)
-			}).ToList();
+			}).OrderByDescending(a => new DateTime(a.Date, a.Start)).AsQueryable();
 
-		return Ok(appointments ?? []);
+		if (page != 0 && pageSize != 0)
+			return Ok(PagedList<PatientAppointmentDto>.CreatePagedList(appointments, page, pageSize));
+		else
+			return Ok(appointments?.ToList() ?? []);
 	}
 
 	[HttpDelete("cancel/{appointmentId}")]
