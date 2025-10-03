@@ -55,7 +55,7 @@ public class FavoritesController(
 		{
 			Id = c.ClinicID,
 			Name = c.Clinic.ClinicName,
-			ClinicImagePath = ApiSettings.BaseUrl + c.Clinic.ImagePath,
+			Image = ApiSettings.BaseUrl + c.Clinic.ImagePath,
 			Address = c.Clinic.Location.ToString()
 		}).AsQueryable();
 
@@ -120,7 +120,7 @@ public class FavoritesController(
 		{
 			Id = d.DoctorID,
 			Name = d.Doctor.Account.Profile.Name,
-			DoctorImagePath = ApiSettings.BaseUrl + d.Doctor.Account.Profile.ProfileImagePath,
+			Image = ApiSettings.BaseUrl + d.Doctor.Account.Profile.ProfileImagePath,
 			ClinicName = d.Doctor.Clinic.ClinicName,
 			ClinicCity = d.Doctor.Clinic.Location.City,
 			Rating = d.Doctor.Rating,
@@ -155,14 +155,14 @@ internal class FavoriteClinicDto
 	public string Id { get; set; }
 	public string Name { get; set; }
 	public string Address { get; set; }
-	public string ClinicImagePath { get; set; }
+	public string Image { get; set; }
 }
 
 internal class FavoriteDoctorDto
 {
 	public string Id { get; set; }
 	public string Name { get; set; }
-	public string DoctorImagePath { get; set; }
+	public string Image { get; set; }
 	public string ClinicName { get; set; }
 	public string ClinicCity { get; set; }
 	public float Rating { get; set; }

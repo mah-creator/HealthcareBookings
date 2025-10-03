@@ -56,8 +56,8 @@ public class ClinicsController(
 	{
 		var clinicsQuery = await mediator.Send(query);
 		var clinicDtosQuery = clinicsQuery
-			.Where(c => Math.Abs(c.Location.Longitude - longitude) <= 20 
-					 && Math.Abs(c.Location.Latitude - latitude) <= 10)
+			.Where(c => Math.Abs(c.Location.Longitude - longitude) <= 3*0.0115
+					 && Math.Abs(c.Location.Latitude - latitude) <= 3*0.009)
 			.AsNoTracking()
 			.Select(c => CreateClinicDto(c, patient));
 
