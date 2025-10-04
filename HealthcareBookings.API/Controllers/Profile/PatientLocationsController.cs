@@ -33,29 +33,34 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 	[HttpPost]
 	public async Task<Results<Ok<IEnumerable<LocationDto>>, BadRequest<ProblemDetails>>> AddPatientLocation([FromBody] LocationRequest location)
 	{
-		var patient = await currentUser.GetCurrentPatient();
+		var patient = currentUser.GetCurrentPatient().Result?.PatientProperties;
 
-		if (patient.PatientProperties?.Locations == null)
+		if (patient == null)
 			throw new InvalidHttpActionException("Your patient profile wasn't setup correctly");
 
 		if (!isValidLocaiton(location, out string? message))
 			throw new InvalidHttpActionException(message!);
 
-		patient.PatientProperties.Locations.Add(new PatientLocation
+		var newLocation = new PatientLocation
 		{
-			PatientUID = patient.Id,
-			Location = new Location
-			{
-				Longitude = location.longitude!.Value,
-				Latitude = location.latitude!.Value,
-			},
-			LocationName = location.loactionName
-		});
+			LocationName = location.LocationName,
+			PatientUID = patient.PatientUID,
+			Location = location
+		};
+
+		var locations = patient.Locations;
+
+		if (locations == null || locations.Count == 0)
+			newLocation.IsPrimary = true;
+		if (locations == null)
+			locations = [];
+
+		locations.Add(newLocation);
 
 		await dbContext.SaveChangesAsync();
 
 		return TypedResults.Ok(
-			patient.PatientProperties.Locations
+			locations
 			.Select(l => new LocationDto(l.Location)
 			{
 				LocationId = l.ID,
@@ -74,23 +79,36 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 		if (locaiton == null)
 			throw new InvalidHttpActionException("The location you asked for was not found");
 
-		if (!string.IsNullOrEmpty(_location?.loactionName))
-			locaiton.LocationName = _location.loactionName;
+		if (!string.IsNullOrEmpty(_location?.LocationName))
+			locaiton.LocationName = _location.LocationName;
 
-		if (_location?.longitude != null)
+		if (_location?.Longitude != null)
 		{
-			if (!isValidLong(_location.longitude.Value, out string message))
+			if (!isValidLong(_location.Longitude.Value, out string message))
 				throw new InvalidHttpActionException(message);
 
-			locaiton.Location.Longitude = _location.longitude.Value;
+			locaiton.Location.Longitude = _location.Longitude.Value;
 		}
-		if (_location?.latitude != null)
+		if (_location?.Latitude != null)
 		{
-			if (!isValidLat(_location.latitude.Value, out string message))
+			if (!isValidLat(_location.Latitude.Value, out string message))
 				throw new InvalidHttpActionException(message);
 
-			locaiton.Location.Latitude = _location.latitude.Value;
+			locaiton.Location.Latitude = _location.Latitude.Value;
 		}
+
+		if (!string.IsNullOrEmpty(_location?.City))
+			locaiton.Location.City = _location.City;
+		if (!string.IsNullOrEmpty(_location?.Country))
+			locaiton.Location.Country = _location.Country;
+		if (!string.IsNullOrEmpty(_location?.StreetName))
+			locaiton.Location.StreetName = _location.StreetName;
+		if (_location?.StreetNumber  != null)
+			locaiton.Location.StreetNumber = _location.StreetNumber;
+		if (!string.IsNullOrEmpty(_location?.PostalCode))
+			locaiton.Location.PostalCode = _location.PostalCode;
+		if (!string.IsNullOrEmpty(_location?.AddressText))
+			locaiton.Location.AddressText = _location.AddressText;
 
 		await dbContext.SaveChangesAsync();
 
@@ -112,6 +130,9 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 
 		if (location == null)
 			throw new InvalidHttpActionException("The location wasn't found among you locations");
+
+		if (location.IsPrimary)
+			throw new InvalidHttpActionException($"Can't remove primary location '{location.LocationName}'");
 
 		patient.PatientProperties.Locations.Remove(location);
 
@@ -178,15 +199,15 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 		(bool isValid, string? msg) result = locationRequest switch
 		{
 			null => (false, "Invalid location"),
-			{ loactionName: null or "" }
+			{ LocationName: null or "" }
 				=> (false, "Locaiton name is required"),
-			{ latitude: null } 
+			{ Latitude: null } 
 				=> (false, "Latitude is required"),
-			{ longitude: null }
+			{ Longitude: null }
 				=> (false, "Longitude is required"),
-			{ latitude: not null } when !isValidLat(locationRequest.latitude.Value, out string m_lat) 
+			{ Latitude: not null } when !isValidLat(locationRequest.Latitude.Value, out string m_lat) 
 				=> (false, m_lat),
-			{ longitude: not null } when !isValidLong(locationRequest.longitude.Value, out string m_long)
+			{ Longitude: not null } when !isValidLong(locationRequest.Longitude.Value, out string m_long)
 				=> (false, m_long),
 			_ => (true, null),
 		};
@@ -196,4 +217,7 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 	}
 }
 
-public record LocationRequest(string? loactionName, float? longitude, float? latitude);
+public class LocationRequest : Location
+{
+	public string LocationName { get; set; }
+}

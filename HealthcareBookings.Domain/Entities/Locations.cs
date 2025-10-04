@@ -13,8 +13,8 @@ public class PatientLocation
 
 public class Location
 {
-	public float Longitude { get; set; }
-	public float Latitude { get; set; }
+    public float? Longitude { get; set; }
+	public float? Latitude { get; set; }
     public int? StreetNumber { get; set; }
     public string? StreetName { get; set; }
     public string? Country { get; set; }

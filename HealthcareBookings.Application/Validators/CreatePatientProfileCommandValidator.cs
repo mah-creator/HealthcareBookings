@@ -16,22 +16,6 @@ public class CreatePatientProfileCommandValidator : AbstractValidator<CreatePati
 		RuleFor(p => p.DateOfBirth)
 			.NotNull().WithMessage("Date of birth is required");
 
-		RuleFor(p => p.LocationName).NotEmpty().WithMessage("Location name is required");
-		RuleFor(p => p.Longitude).NotEmpty().WithMessage("Longitude is required")
-			.Must(lng =>
-				lng >= ValidationConstants.LongitudeRange.Min &&
-				lng <= ValidationConstants.LongitudeRange.Max)
-			.When(cp => cp is not null)
-			.WithMessage($"Invalid longitude value, valid range: "
-				+ $"[{ValidationConstants.LongitudeRange.Min},{ValidationConstants.LongitudeRange.Max}]");
-		RuleFor(p => p.Latitude).NotEmpty().WithMessage("Latitude is required")
-			.Must(lat =>
-					lat >= ValidationConstants.LatitudeRange.Min &&
-					lat <= ValidationConstants.LatitudeRange.Max)
-				.When(p => p is not null)
-				.WithMessage($"Invalid latitude value, valid range: "
-					+ $"[{ValidationConstants.LatitudeRange.Min},{ValidationConstants.LatitudeRange.Max}]");
-
 		RuleFor(p => p.Gender)
 			.Must(g => g.ToUpper().Equals(Gender.NormalizedFemale)
 					|| g.ToUpper().Equals(Gender.NormalizedMale))

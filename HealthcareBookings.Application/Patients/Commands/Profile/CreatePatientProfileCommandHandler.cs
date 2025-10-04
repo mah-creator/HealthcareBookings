@@ -50,16 +50,6 @@ public class CreatePatientProfileCommandHandler(
 		user.PatientProperties = new Patient
 		{
 			PatientUID = user.Id,
-			Locations = [
-			new () {
-				Location = new (){
-					AddressText = request.LocationName,
-					Longitude = request.Longitude,
-					Latitude = request.Latitude
-				},
-				IsPrimary = true,
-				PatientUID = user.Id
-			}]
 		};
 
 		user.Profile = new ProfileInformation

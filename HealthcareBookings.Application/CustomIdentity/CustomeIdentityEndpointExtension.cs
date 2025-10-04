@@ -1,5 +1,6 @@
 ﻿// The .NET Foundation licenses this file to you under the MIT license.
 
+
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using HealthcareBookings.Application.Users;
+using HealthcareBookings.Domain.Constants;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -142,17 +145,34 @@ public static class IdentityApiEndpointRouteBuilderExtensions
 
 		var accountGroup = routeGroup.MapGroup("/manage").RequireAuthorization();
 
-		accountGroup.MapGet("/info", async Task<Results<Ok<CurrentUser>, ValidationProblem, NotFound>>
+		accountGroup.MapGet("/info", async Task<IResult>
 			(ClaimsPrincipal claimsPrincipal, [FromServices] IServiceProvider sp) =>
 		{
 			var currentUserService = sp.GetRequiredService<CurrentUserService>();
 			var currentUser = currentUserService.GetCurrentUser();
 			if (currentUser.Id is null)
 			{
-				return TypedResults.NotFound();
+				return Results.NotFound();
+			}
+			if (currentUser.Role == UserRoles.Patient)
+			{
+				var currentUserEntityService = sp.GetRequiredService<CurrentUserEntityService>();
+				var patient = await currentUserEntityService.GetCurrentPatient();
+				return Results.Ok(new
+				{
+
+					id = currentUser.Id,
+					email = currentUser.Email,
+					role = currentUser.Role,
+					ProfileCompleted = patient.PatientProperties?.Account?.Profile == null ? false : true,
+					LocationsCreated =
+						   patient.PatientProperties?.Locations == null
+						|| patient.PatientProperties?.Locations?.Count == 0 ? false : true
+				});
+
 			}
 
-			return TypedResults.Ok(currentUser);
+			return Results.Ok(currentUser);
 		}).RequireAuthorization();
 
 		async Task SendConfirmationEmailAsync(TUser user, UserManager<TUser> userManager, HttpContext context, string email, bool isChange = false)
