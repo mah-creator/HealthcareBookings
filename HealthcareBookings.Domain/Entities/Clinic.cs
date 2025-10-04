@@ -14,6 +14,7 @@ public class Clinic
     public ClinicAdmin ClinicAdmin { get; set; }
 
     public List<Doctor> Doctors { get; set; }
+    public string Category {  get; set; }
 }
 
 public class ClinicAdmin
