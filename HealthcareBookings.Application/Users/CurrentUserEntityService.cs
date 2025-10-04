@@ -40,7 +40,7 @@ public class CurrentUserEntityService(
 				.ThenInclude(a => a.Doctor).ThenInclude(d => d.Category)
 			.Include(u => u.PatientProperties).ThenInclude(p => p.Appointments)
 				.ThenInclude(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
-			.Include(p => p.PatientProperties).ThenInclude(p => p.Locations)
+			.Include(p => p.PatientProperties).ThenInclude(p => p.Locations).ThenInclude(ls => ls.Location)
 			.Include(u => u.Profile)
 			.Where(u => u.Id == currentUser.Id)
 			.First();

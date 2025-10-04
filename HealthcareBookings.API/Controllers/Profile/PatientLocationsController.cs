@@ -23,13 +23,11 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 		if (patientLocations == null)
 			throw new InvalidHttpActionException("Your patient profile wasn't setup correctly");
 
-		return TypedResults.Ok(patientLocations.Select(l => new LocationDto
+		return TypedResults.Ok(patientLocations.Select(l => new LocationDto(l.Location)
 		{
 			LocationId = l.ID,
-			LocationName = l.Location.AddressText,
-			Longitude = l.Location.Longitude,
-			Latitude = l.Location.Latitude,
-			IsPrimary = l.IsPrimary
+			LocationName = l.LocationName,
+			IsPrimary = l.IsPrimary,
 		}));
 	}
 	[HttpPost]
@@ -48,18 +46,22 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 			PatientUID = patient.Id,
 			Location = new Location
 			{
-				AddressText = location.loactionName!,
 				Longitude = location.longitude!.Value,
 				Latitude = location.latitude!.Value,
-			}
+			},
+			LocationName = location.loactionName
 		});
 
 		await dbContext.SaveChangesAsync();
 
 		return TypedResults.Ok(
 			patient.PatientProperties.Locations
-			.Select(p => new LocationDto {
-				LocationId = p.ID, LocationName = p.Location.AddressText, Longitude = p.Location.Longitude, Latitude = p.Location.Latitude, IsPrimary = p.IsPrimary })
+			.Select(l => new LocationDto(l.Location)
+			{
+				LocationId = l.ID,
+				LocationName = l.LocationName,
+				IsPrimary = l.IsPrimary
+			})
 		);
 	}
 
@@ -73,7 +75,7 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 			throw new InvalidHttpActionException("The location you asked for was not found");
 
 		if (!string.IsNullOrEmpty(_location?.loactionName))
-			locaiton.Location.AddressText = _location.loactionName;
+			locaiton.LocationName = _location.loactionName;
 
 		if (_location?.longitude != null)
 		{
@@ -93,12 +95,10 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 		await dbContext.SaveChangesAsync();
 
 		return TypedResults.Ok(
-			new LocationDto
+			new LocationDto(locaiton.Location)
 			{
 				LocationId = locaiton.ID,
-				LocationName = locaiton.Location.AddressText,
-				Longitude = locaiton.Location.Longitude,
-				Latitude = locaiton.Location.Latitude,
+				LocationName = locaiton.LocationName,
 				IsPrimary = locaiton.IsPrimary
 			}
 		);
@@ -138,12 +138,10 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 
 		await dbContext.SaveChangesAsync();
 
-		return TypedResults.Ok(patientLocations.Select(l => new LocationDto
+		return TypedResults.Ok(patientLocations.Select(l => new LocationDto(l.Location)
 		{
 			LocationId = l.ID,
-			LocationName = l.Location.AddressText,
-			Longitude = l.Location.Longitude,
-			Latitude = l.Location.Latitude,
+			LocationName = l.LocationName,
 			IsPrimary = l.IsPrimary
 		}));
 	}

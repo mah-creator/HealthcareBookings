@@ -3,6 +3,7 @@ using System;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareBookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251004094139_LocationNameColumnForPatienLocations")]
+    partial class LocationNameColumnForPatienLocations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
@@ -556,6 +559,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("AddressText")
+                                .IsRequired()
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("City")
@@ -698,6 +702,7 @@ namespace HealthcareBookings.Infrastructure.Migrations
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("AddressText")
+                                .IsRequired()
                                 .HasColumnType("TEXT");
 
                             b1.Property<string>("City")

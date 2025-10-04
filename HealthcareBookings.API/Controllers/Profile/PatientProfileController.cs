@@ -42,7 +42,11 @@ public class PatientProfileController(IMediator mediator,
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
-			Locations = patient?.Locations?.Select(l => new LocationDto {LocationId = l.ID, LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary }),
+			Locations = patient?.Locations?.Select(l => new LocationDto(l.Location)
+			{
+				LocationId = l?.ID,
+				IsPrimary = l?.IsPrimary
+			}),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 
@@ -66,7 +70,7 @@ public class PatientProfileController(IMediator mediator,
 			Name = profile.Name,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
-			Locations = patient.Locations.Select(l => new LocationDto {LocationId = l.ID, LocationName = l?.Location?.AddressText, Longitude = l?.Location?.Longitude, Latitude = l?.Location?.Latitude, IsPrimary = l?.IsPrimary}),
+			Locations = patient.Locations.Select(l => new LocationDto(l.Location) {LocationId = l.ID, IsPrimary = l?.IsPrimary}),
 			ProfileImagePath = profile.ProfileImagePath
 		});
 	}

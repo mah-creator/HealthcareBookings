@@ -8,6 +8,7 @@ public class PatientLocation
     public string PatientUID { get; set; }
     public Location Location { get; set; }
     public bool IsPrimary { get; set; } = false;
+    public string LocationName { get; set; }
 }
 
 public class Location
@@ -19,7 +20,7 @@ public class Location
     public string? Country { get; set; }
     public string? City { get; set; }
     public string? PostalCode { get; set; }
-    public string AddressText { get; set; }
+    public string? AddressText { get; set; } = default!;
 
 	public override string ToString()
 	{
