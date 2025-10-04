@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Application.Constants;
+﻿using HealthcareBookings.API.Controllers.Clinics;
+using HealthcareBookings.Application.Constants;
 using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
@@ -8,6 +9,10 @@ using HealthcareBookings.Domain.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using HealthcareBookings.Application.Clinics;
+using static HealthcareBookings.Application.Clinics.Utils;
+using static HealthcareBookings.Application.Doctors.Utils;
+using HealthcareBookings.Application.Doctors.Queries;
 
 namespace HealthcareBookings.API.Controllers.Favorites;
 
@@ -43,23 +48,17 @@ public class FavoritesController(
 
 		await dbContext.SaveChangesAsync();
 
-		return Ok();
+		return Ok($"'{clinic.ClinicName}' was added to your favorites");
 	}
 
 	[HttpGet("clinics")]
-	[ProducesResponseType(typeof(PagedList<FavoriteClinicDto>), 200)]
+	[ProducesResponseType(typeof(PagedList<ClinicDto>), 200)]
 	public async Task<IActionResult> GetFavoriteClinics(int page, int pageSize)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var favoriteClinics = patient.PatientProperties?.FavoriteClinics?.Select(c => new FavoriteClinicDto
-		{
-			Id = c.ClinicID,
-			Name = c.Clinic.ClinicName,
-			Image = ApiSettings.BaseUrl + c.Clinic.ImagePath,
-			Address = c.Clinic.Location.ToString()
-		}).AsQueryable();
+		var favoriteClinics = patient.PatientProperties?.FavoriteClinics?.Select(c => CreateClinicDto(c.Clinic, patient, null, null)).AsQueryable();
 
-		return Ok(PagedList<FavoriteClinicDto>.CreatePagedList(favoriteClinics, page, pageSize));
+		return Ok(PagedList<ClinicDto>.CreatePagedList(favoriteClinics, page, pageSize));
 	}
 
 	[HttpDelete("clinics")]
@@ -78,7 +77,7 @@ public class FavoritesController(
 		patient.PatientProperties.FavoriteClinics.Remove(clinic);
 		await dbContext.SaveChangesAsync();
 
-		return Ok();
+		return Ok($"Clinic {clinic.Clinic.ClinicName} was removed from favorites");
 	}
 
 	[HttpPost("doctors")]
@@ -108,26 +107,18 @@ public class FavoritesController(
 
 		await dbContext.SaveChangesAsync();
 
-		return Ok();
+		return Ok($"Doctor '{doctor.Account.Profile.Name}' was added to your favorites");
 	}
 
 	[HttpGet("doctors")]
-	[ProducesResponseType(typeof(PagedList<FavoriteDoctorDto>), 200)]
+	[ProducesResponseType(typeof(PagedList<DoctorDto>), 200)]
 	public async Task<IActionResult> GetFavoriteDoctors(int page, int pageSize)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var favoriteDoctors = patient.PatientProperties?.FavoriteDoctors?.AsQueryable().Select(d => new FavoriteDoctorDto
-		{
-			Id = d.DoctorID,
-			Name = d.Doctor.Account.Profile.Name,
-			Image = ApiSettings.BaseUrl + d.Doctor.Account.Profile.ProfileImagePath,
-			ClinicName = d.Doctor.Clinic.ClinicName,
-			ClinicCity = d.Doctor.Clinic.Location.City,
-			Rating = d.Doctor.Rating,
-			Reviews = dbContext.Appointments.Where(a => a.DoctorID == d.DoctorID && a.Review != null).Count()
-		}).AsQueryable(); ;
+		var favoriteDoctors = patient.PatientProperties?.FavoriteDoctors?.Select(d => CreateDoctorDto(d.Doctor, patient))
+		.AsQueryable(); ;
 
-		return Ok(PagedList<FavoriteDoctorDto>.CreatePagedList(favoriteDoctors, page, pageSize));
+		return Ok(PagedList<DoctorDto>.CreatePagedList(favoriteDoctors, page, pageSize));
 	}
 
 	[HttpDelete("doctors")]
@@ -146,25 +137,6 @@ public class FavoritesController(
 		patient.PatientProperties.FavoriteDoctors.Remove(doctor);
 		await dbContext.SaveChangesAsync();
 
-		return Ok();
+		return Ok($"Doctor '{doctor.Doctor.Account.Profile.Name}' removed from favorites");
 	}
-}
-
-internal class FavoriteClinicDto
-{
-	public string Id { get; set; }
-	public string Name { get; set; }
-	public string Address { get; set; }
-	public string Image { get; set; }
-}
-
-internal class FavoriteDoctorDto
-{
-	public string Id { get; set; }
-	public string Name { get; set; }
-	public string Image { get; set; }
-	public string ClinicName { get; set; }
-	public string ClinicCity { get; set; }
-	public float Rating { get; set; }
-	public int Reviews { get; set; }
 }
