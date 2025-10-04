@@ -3,6 +3,7 @@ using System;
 using HealthcareBookings.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareBookings.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251004064442_RatingPropertiesForClinic")]
+    partial class RatingPropertiesForClinic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.8");
@@ -96,10 +99,10 @@ namespace HealthcareBookings.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<float>("Rating")
+                    b.Property<float?>("Rating")
                         .HasColumnType("REAL");
 
-                    b.Property<int>("RatingCount")
+                    b.Property<int?>("RatingCount")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ClinicID");

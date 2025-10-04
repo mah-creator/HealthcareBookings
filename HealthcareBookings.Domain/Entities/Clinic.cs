@@ -8,6 +8,8 @@ public class Clinic
     public string ClinicName { get; set; }
     public string? ClinicDescription { get; set; }
     public string ImagePath { get; set; }
+    public float Rating { get; set; } = 0;
+    public int RatingCount { get; set; } = 0;
     public Location Location { get; set; }
     public ClinicAdmin ClinicAdmin { get; set; }
 
