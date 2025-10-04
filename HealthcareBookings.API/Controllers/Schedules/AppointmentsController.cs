@@ -80,10 +80,10 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		var appointments = dbContext.Appointments
 			.Where(		a => a.Status.ToLower().Equals(appointmentStatus)
-					&&	a.DoctorID == doctor.Id
-					&&	!isOverdue(a))
+					&&	a.DoctorID == doctor.Id)
 			.Include(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
-			.Include(a => a.TimeSlot).ThenInclude(ts => ts.Schedule)
+			.Include(a => a.TimeSlot).ThenInclude(ts => ts.Schedule).AsEnumerable()
+			.Where(a => !isOverdue(a))
 			.Select(a => new AppointmentDto
 			{
 				AppointmentId = a.AppointmentID,
@@ -112,8 +112,9 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		var appointments = patient?.PatientProperties?.Appointments
 			?.Where(a => 
-				a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase)
-				& !isOverdue(a))
+				a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase))
+			.AsEnumerable()
+			.Where(a => !isOverdue(a))
 
 			.Select(a => new PatientAppointmentDto
 			{

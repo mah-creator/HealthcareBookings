@@ -117,7 +117,7 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 
 		await dbContext.SaveChangesAsync();
 
-		return TypedResults.Ok($"Location '{location?.Location?.AddressText?? ""}' was deleted successfully");
+		return TypedResults.Ok($"Location '{location?.LocationName}' was deleted successfully");
 	}
 
 	[HttpPost("favor/{locationId}")]
