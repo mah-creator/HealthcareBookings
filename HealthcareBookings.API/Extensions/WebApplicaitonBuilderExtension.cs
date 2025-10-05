@@ -4,6 +4,10 @@ using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using MicroElements.OpenApi.FluentValidation;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Net;
 
 namespace Resturants.API.Extensions;
 
@@ -12,9 +16,27 @@ public static class WebApplicationBuilderExtension
 	public static void AddPresentation(this WebApplicationBuilder builder)
 	{
 		builder.Services.AddHttpContextAccessor();
-		builder.Services.AddAuthentication();
+		builder.Services.AddAuthentication(options =>
+		{
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+		})
+		.AddJwtBearer(options =>
+		{
+			options.TokenValidationParameters = new TokenValidationParameters
+			{
+				ValidateIssuer = true,
+				ValidateAudience = true,
+				ValidateLifetime = true,
+				ValidateIssuerSigningKey = true,
+				ValidIssuer = Dns.GetHostName(),
+				ValidAudience = builder.Configuration["Jwt:Audience"],
+				IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+			};
+		});
 
-		builder.Services.AddCors(c => 
+
+		builder.Services.AddCors(c =>
 			c.AddPolicy("Development", options =>
 				options
 					.AllowAnyOrigin()

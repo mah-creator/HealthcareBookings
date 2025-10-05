@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddScoped<IConfigurationManager, ConfigurationManager>();
+
 // Add services to the container.
 builder.Services.AddInfrastucture(builder.Configuration);
 builder.Services.AddApplication();
