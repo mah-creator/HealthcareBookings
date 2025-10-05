@@ -30,11 +30,10 @@ public class CustomeIdentityEndpoints(
 		signInManager.AuthenticationScheme = IdentityConstants.BearerScheme;
 
 		var user = await userManager.FindByEmailAsync(login.Email);
-		var result = await signInManager.CheckPasswordSignInAsync(user, login.Password, true);
 
-		if (!result.Succeeded)
+		if (user == null || !signInManager.CheckPasswordSignInAsync(user, login.Password, true).Result.Succeeded)
 		{
-			return Problem(result.ToString(), title: "Failed to login", statusCode: StatusCodes.Status401Unauthorized);
+			return Problem(title: "Failed to login", statusCode: StatusCodes.Status401Unauthorized);
 		}
 
 		var roles = await userManager.GetRolesAsync(user);
