@@ -36,7 +36,7 @@ public class UpdatePatientProfileCommandHnadler(CurrentUserService currentUserSe
 
 			user.Profile.ProfileImagePath = relativePath;
 
-			await context.SaveChangesAsync(cancellationToken);
 		}
+		await context.SaveChangesAsync(cancellationToken);
 	}
 }
