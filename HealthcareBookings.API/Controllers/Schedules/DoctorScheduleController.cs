@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using static HealthcareBookings.Application.Utils.ScheduleUtils;
 
 namespace HealthcareBookings.API.Controllers.Schedules;
 
@@ -121,9 +122,6 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 		return TypedResults.Ok();
 	}
-
-
-	private bool timeWithin(TimeOnly start, TimeOnly end, TimeOnly time) => time < end && time > start;
 }
 
 internal struct TimeSlotDto

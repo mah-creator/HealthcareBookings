@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static HealthcareBookings.Application.Utils.ScheduleUtils;
 
 namespace HealthcareBookings.API.Controllers.Schedules;
 
@@ -121,7 +122,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				Start = a.TimeSlot.StartTime,
 				End = a.TimeSlot.EndTime,
 				ClinicName = a.Doctor.Clinic.ClinicName,
-				ClinicLocation = a.Doctor.Clinic.Location.AddressText,
+				ClinicLocation = a.Doctor.Clinic.Location,
 				DoctorName = a.Doctor.Account.Profile.Name,
 				DoctorCategory = a.Doctor.Category.CategoryName,
 				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
@@ -140,7 +141,8 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	public async Task<IActionResult> CancelAppointment(string appointmentId)
 	{
 		var appointment = dbContext.Appointments
-			.Include(a => a.TimeSlot).Include(a => a.Doctor)
+			.Include(a => a.TimeSlot).ThenInclude(s => s.Schedule)
+			.Include(a => a.Doctor)
 			.Where(a => a.AppointmentID == appointmentId)
 			.FirstOrDefault();
 
@@ -157,7 +159,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		appointment.Status = AppointmentStatus.Canceled;
 		
 		await dbContext.SaveChangesAsync();
-		return Ok();
+		return Ok($"Appointment at {new DateTime(appointment.TimeSlot.Schedule.Date, appointment.TimeSlot.StartTime)} was canceled successfully");
 	}
 
 	[HttpPost("complete/{appointmentId}")]
@@ -195,7 +197,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			}
 		});
 	}
-	private  bool createAppointmentAction(string doctorId, DateOnly date, TimeOnly time,  out string? message, out PatientAppointmentDto? a)
+	private bool createAppointmentAction(string doctorId, DateOnly date, TimeOnly time,  out string? message, out PatientAppointmentDto? a)
 	{
 		message = null;
 		a = null;
@@ -224,6 +226,11 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		var patient =  currentUserEntityService.GetCurrentPatient().Result;
 		var patientAppointments = patient.PatientProperties.Appointments;
+		if (patientAppointments.Where(a => a.TimeSlot.Schedule.Date == date && a.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase)).Any(a => timeWithin(a.TimeSlot.StartTime, a.TimeSlot.EndTime, time)))
+		{
+			message = $"The appointment you requested at {time} overlaps with another appointment";
+			return false;
+		}
 		if (patientAppointments.Where(a => a.TimeSlotID == timeSlot.SlotID && a.Status == AppointmentStatus.Upcoming && !isOverdue(a)).Any())
 		{
 			message = $"You already have an appointment at {schedule.Date}, {timeSlot.StartTime} - {timeSlot.EndTime}";
@@ -256,7 +263,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			Start = timeSlot.StartTime,
 			End = timeSlot.EndTime,
 			ClinicName = doctor.Clinic.ClinicName,
-			ClinicLocation = doctor.Clinic.Location.AddressText,
+			ClinicLocation = doctor.Clinic.Location,
 			DoctorName = doctor.Account.Profile.Name,
 			DoctorImage = doctor.Account.Profile.ProfileImagePath,
 			DoctorCategory = doctor.Category.CategoryName
@@ -285,7 +292,7 @@ internal struct PatientAppointmentDto
 	public TimeOnly Start { get; set; }
 	public TimeOnly End { get; set; }
 	public string ClinicName { get; set; }
-	public string ClinicLocation { get; set; }
+	public Location ClinicLocation { get; set; }
 	public string DoctorName { get; set; }
 	public string DoctorCategory { get; set; }
 	public string DoctorImage { get; set; }
