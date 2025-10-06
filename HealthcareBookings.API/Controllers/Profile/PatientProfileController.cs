@@ -57,7 +57,7 @@ public class PatientProfileController(IMediator mediator,
 
 		if (profile is null || patient is null)
 		{
-			throw new InvalidHttpActionException("Your patient profile wasn't set up correctlu");
+			throw new InvalidHttpActionException("Your patient profile wasn't set up correctly");
 		}
 
 		return Ok(new GetPatientProfileQuery

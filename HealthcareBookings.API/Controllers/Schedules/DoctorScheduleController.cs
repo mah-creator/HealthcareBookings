@@ -21,6 +21,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 	[HttpGet("{doctorId}")]
 	[ProducesResponseType(typeof(List<TimeSlotDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(string), 400)]
+	[Authorize(Roles = $"{UserRoles.ClinicAdmin},{UserRoles.Patient}")]
 	public async Task<IActionResult> GetSchedule(string doctorId, [Required] DateOnly date)
 	{
 		var doctor = dbContext.Doctors
