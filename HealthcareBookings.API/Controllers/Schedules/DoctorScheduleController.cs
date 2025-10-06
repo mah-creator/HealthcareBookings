@@ -15,7 +15,6 @@ namespace HealthcareBookings.API.Controllers.Schedules;
 
 [Controller]
 [Route("/api/schedules")]
-[Authorize(Roles = UserRoles.ClinicAdmin)]
 public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 {
 	[HttpGet("{doctorId}")]
@@ -51,6 +50,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 	[HttpPost("{doctorId}")]
 	[ProducesResponseType(typeof(List<TimeSlotDto>), StatusCodes.Status200OK)]
 	[ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+	[Authorize(Roles = UserRoles.ClinicAdmin)]
 	public async Task<IActionResult> CreateTimeSlot(
 		string doctorId,
 		[Required] DateOnly date,
@@ -108,6 +108,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 	}
 
 	[HttpDelete("{slotId}")]
+	[Authorize(Roles = UserRoles.ClinicAdmin)]
 	public async Task<Results<Ok, BadRequest<string>>> DeleteTimeSlot(string slotId)
 	{
 		var slot = dbContext.DoctorTimeSlots.Find(slotId);
