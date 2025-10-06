@@ -265,7 +265,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			ClinicName = doctor.Clinic.ClinicName,
 			ClinicLocation = doctor.Clinic.Location,
 			DoctorName = doctor.Account.Profile.Name,
-			DoctorImage = doctor.Account.Profile.ProfileImagePath,
+			DoctorImage = ApiSettings.BaseUrl + doctor.Account.Profile.ProfileImagePath,
 			DoctorCategory = doctor.Category.CategoryName
 		};
 
