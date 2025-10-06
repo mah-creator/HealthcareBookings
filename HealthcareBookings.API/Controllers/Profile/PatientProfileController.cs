@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Application.Patients.Commands.Profile;
+﻿using HealthcareBookings.Application.Constants;
+using HealthcareBookings.Application.Patients.Commands.Profile;
 using HealthcareBookings.Application.Patients.Queries;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
@@ -37,13 +38,7 @@ public class PatientProfileController(IMediator mediator,
 
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
 		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
-		return Ok(new GetPatientProfileQuery
-		{
-			Name = profile.Name,
-			DateOfBirth = profile.DOB,
-			Gender = profile.Gender,
-			ProfileImagePath = profile.ProfileImagePath
-		});
+		return Ok(createPatientProfileDto(profile));
 
 	}
 
@@ -60,14 +55,7 @@ public class PatientProfileController(IMediator mediator,
 			throw new InvalidHttpActionException("Your patient profile wasn't set up correctly");
 		}
 
-		return Ok(new GetPatientProfileQuery
-		{
-			Name = profile.Name,
-			DateOfBirth = profile.DOB,
-			Gender = profile.Gender,
-			Locations = patient.Locations?.Select(l => new LocationDto(l.Location) {LocationId = l.ID, IsPrimary = l?.IsPrimary}),
-			ProfileImagePath = profile.ProfileImagePath
-		});
+		return Ok(createPatientProfileDto(profile));
 	}
 
 	[HttpPatch]
@@ -86,12 +74,16 @@ public class PatientProfileController(IMediator mediator,
 
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
 
-		return Ok(new GetPatientProfileQuery
+		return Ok(createPatientProfileDto(profile));
+	}
+	private GetPatientProfileQuery createPatientProfileDto(ProfileInformation profile)
+	{
+		return new GetPatientProfileQuery
 		{
-			Name = profile.Name,
+			Name = profile.Name ?? UserRoles.Patient,
 			DateOfBirth = profile.DOB,
 			Gender = profile.Gender,
-			ProfileImagePath = profile.ProfileImagePath
-		});
+			ProfileImagePath = ApiSettings.BaseUrl + profile.ProfileImagePath
+		};
 	}
 }
