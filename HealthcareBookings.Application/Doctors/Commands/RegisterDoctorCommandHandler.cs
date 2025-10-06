@@ -55,4 +55,10 @@ public class RegisterDoctorCommandHandler(
 
 		await dbContext.SaveChangesAsync(cancellationToken);
 	}
+
+	internal struct start_end
+	{
+		public TimeOnly start { get; set; }
+		public TimeOnly end { get; set; }
+	}
 }

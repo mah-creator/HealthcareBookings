@@ -64,7 +64,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		if (!success)
 		{
 			transaction.RollbackToSavepoint("BeforeRescheduling");
-			throw new InvalidHttpActionException(errorMessage);
+			throw new InvalidHttpActionException (errorMessage);
 		}
 		return Ok(a);
 	}

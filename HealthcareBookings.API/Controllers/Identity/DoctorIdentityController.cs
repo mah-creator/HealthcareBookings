@@ -1,4 +1,6 @@
-﻿using HealthcareBookings.Application.Doctors.Commands;
+﻿using HealthcareBookings.Domain.Entities;
+using HealthcareBookings.Application.Data;
+using HealthcareBookings.Application.Doctors.Commands;
 using HealthcareBookings.Domain.Constants;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -11,12 +13,12 @@ namespace HealthcareBookings.API.Controllers.Identity;
 [Tags("Identity")]
 [Authorize(Roles = UserRoles.ClinicAdmin)]
 
-public class DoctorIdentityController(IMediator mediator) : ControllerBase
+public class DoctorIdentityController(IMediator mediator, IAppDbContext dbContext) : ControllerBase
 {
 	[HttpPost("registerDoctor")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-	public async Task<IActionResult> RegisterPatient([FromBody] RegisterDoctorCommand command)
+	public async Task<IActionResult> RegisterDoctor([FromBody] RegisterDoctorCommand command)
 	{
 		await mediator.Send(command);
 		return NoContent();
