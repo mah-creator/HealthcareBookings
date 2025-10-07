@@ -42,6 +42,24 @@ public class DoctorsController(
 			);
 	}
 
+	[HttpGet("clinic/{clinicId}")]
+	[ProducesResponseType(typeof(PagedList<DoctorDto>), 200)]
+	public async Task<IActionResult> GetDoctorsByClinic(string clinicId, string? categoryId, GetDoctorsQuery query)
+	{
+		var doctors = mediator.Send(query).Result
+			.Where(d => d.ClinicID == clinicId);
+		if (!string.IsNullOrEmpty(categoryId) && !string.IsNullOrWhiteSpace(categoryId))
+			doctors = doctors.Where(d => d.CategoryID == categoryId);
+
+		var doctorDtos = doctors.Select(d => CreateDoctorDto(d, patient));
+
+		return
+			Ok(
+				PagedList<DoctorDto>
+				.CreatePagedList(doctorDtos, query.Page, query.PageSize)
+			);
+	}
+
 	[HttpGet("{categoryId}")]
 	[ProducesResponseType(typeof(PagedList<DoctorDto>), 200)]
 	public async Task<IActionResult> GetDoctorsByCategory(string categoryId, GetDoctorsQuery query)
