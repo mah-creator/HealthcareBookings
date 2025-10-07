@@ -48,7 +48,7 @@ public class FavoritesController(
 
 		await dbContext.SaveChangesAsync();
 
-		return Ok($"'{clinic.ClinicName}' was added to your favorites");
+		return Ok(new { title = $"'{clinic.ClinicName}' was added to your favorites" });
 	}
 
 	[HttpGet("clinics")]
@@ -77,7 +77,7 @@ public class FavoritesController(
 		patient.PatientProperties.FavoriteClinics.Remove(clinic);
 		await dbContext.SaveChangesAsync();
 
-		return Ok($"Clinic {clinic.Clinic.ClinicName} was removed from favorites");
+		return Ok(new { title = $"Clinic {clinic.Clinic.ClinicName} was removed from favorites" });
 	}
 
 	[HttpPost("doctors")]
@@ -107,7 +107,7 @@ public class FavoritesController(
 
 		await dbContext.SaveChangesAsync();
 
-		return Ok($"Doctor '{doctor.Account.Profile.Name}' was added to your favorites");
+		return Ok(new { title = $"Doctor '{doctor.Account.Profile.Name}' was added to your favorites" });
 	}
 
 	[HttpGet("doctors")]
@@ -137,6 +137,6 @@ public class FavoritesController(
 		patient.PatientProperties.FavoriteDoctors.Remove(doctor);
 		await dbContext.SaveChangesAsync();
 
-		return Ok($"Doctor '{doctor.Doctor.Account.Profile.Name}' removed from favorites");
+		return Ok(new { title = $"Doctor '{doctor.Doctor.Account.Profile.Name}' removed from favorites" });
 	}
 }

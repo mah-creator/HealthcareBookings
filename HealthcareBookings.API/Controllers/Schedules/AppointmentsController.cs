@@ -167,7 +167,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		appointment.Status = AppointmentStatus.Canceled;
 		
 		await dbContext.SaveChangesAsync();
-		return Ok($"Appointment at {new DateTime(appointment.TimeSlot.Schedule.Date, appointment.TimeSlot.StartTime)} was canceled successfully");
+		return Ok(new { title = $"Appointment at {new DateTime(appointment.TimeSlot.Schedule.Date, appointment.TimeSlot.StartTime)} was canceled successfully" });
 	}
 
 	[HttpPost("complete/{appointmentId}")]

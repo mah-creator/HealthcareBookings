@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Application.Data;
+﻿using HealthcareBookings.Application.Constants;
+using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
@@ -41,7 +42,7 @@ public class ReviewsController(IAppDbContext dbContext) : ControllerBase
 		appointment.Doctor.RatingCount+=1;
 		await dbContext.SaveChangesAsync();
 
-		return Ok();
+		return Ok(new { title = "Thank you for your review" });
 	}
 	
 	[HttpGet("{doctorId}")]
@@ -49,14 +50,14 @@ public class ReviewsController(IAppDbContext dbContext) : ControllerBase
 	public async Task<IActionResult> GetReviews(string doctorId, [Required] int page = 1, [Required] int pageSize = 10)
 	{
 		var reviews = dbContext.Appointments?
+			.Include(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
 			.Where(a => a.DoctorID == doctorId)
 			.Where(a => a.Review != null)
 			.Select(a => a.Review)
-			.Include(r => r.Appointment).ThenInclude(a => a.Patient).ThenInclude(p => p.Account).ThenInclude(a => a.Profile)
 			.Select(r => new ReviewDto
 			{
 				PatientName = r.Appointment.Patient.Account.Profile.Name,
-				PatientImagePath = r.Appointment.Patient.Account.Profile.ProfileImagePath,
+				PatientImagePath = ApiSettings.BaseUrl + r.Appointment.Patient.Account.Profile.ProfileImagePath,
 				Rating = r.Rating,
 				ReviewText = r.ReviewText
 			})
