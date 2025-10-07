@@ -41,7 +41,8 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		transaction.CreateSavepoint("BeforeRescheduling");
 
 		var appointment = dbContext.Appointments
-			.Include(a => a.TimeSlot).Include(a => a.Doctor)
+			.Include(a => a.TimeSlot).ThenInclude(t => t.Schedule)
+			.Include(a => a.Doctor)
 			.Where(a => a.AppointmentID == appointmentId)
 			.FirstOrDefault();
 
@@ -55,9 +56,8 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		}
 
 		appointment.TimeSlot.IsFree = true;
-		
+
 		dbContext.Appointments.Remove(appointment);
-		await dbContext.SaveChangesAsync();
 
 		var success = createAppointmentAction(appointment.Doctor.DoctorUID, date, time, out string? errorMessage, out PatientAppointmentDto? a);
 
@@ -66,6 +66,9 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			transaction.RollbackToSavepoint("BeforeRescheduling");
 			throw new InvalidHttpActionException (errorMessage);
 		}
+
+		await transaction.CommitAsync();
+		await dbContext.SaveChangesAsync();
 		return Ok(a);
 	}
 
@@ -119,15 +122,20 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			{
 				AppointmentId = a.AppointmentID,
 				Date = a.TimeSlot.Schedule.Date,
-				Start = a.TimeSlot.StartTime,
-				End = a.TimeSlot.EndTime,
+				TimeSlot = new TimeSlotDto
+				{
+					Id = a.TimeSlot.SlotID,
+					StartTime = a.TimeSlot.StartTime,
+					EndTime = a.TimeSlot.EndTime,
+					IsFree = a.TimeSlot.IsFree
+				},
 				ClinicName = a.Doctor.Clinic.ClinicName,
 				ClinicLocation = a.Doctor.Clinic.Location,
 				DoctorName = a.Doctor.Account.Profile.Name,
 				DoctorCategory = a.Doctor.Category.CategoryName,
 				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
 				IsOverdue = isOverdue(a)
-			}).OrderBy(a => new DateTime(a.Date, a.Start)).AsQueryable();
+			}).OrderBy(a => new DateTime(a.Date, a.TimeSlot.StartTime)).AsQueryable();
 
 		if (page != 0 && pageSize != 0)
 			return Ok(PagedList<PatientAppointmentDto>.CreatePagedList(appointments, page, pageSize));
@@ -260,8 +268,13 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 		{
 			AppointmentId = appointment.AppointmentID,
 			Date = schedule.Date,
-			Start = timeSlot.StartTime,
-			End = timeSlot.EndTime,
+			TimeSlot = new TimeSlotDto
+			{
+				Id = timeSlot.SlotID,
+				StartTime = timeSlot.StartTime,
+				EndTime = timeSlot.EndTime,
+				IsFree = timeSlot.IsFree
+			},
 			ClinicName = doctor.Clinic.ClinicName,
 			ClinicLocation = doctor.Clinic.Location,
 			DoctorName = doctor.Account.Profile.Name,
@@ -289,14 +302,21 @@ internal struct PatientAppointmentDto
 {
 	public string AppointmentId { get; set; }
 	public DateOnly Date { get; set; }
-	public TimeOnly Start { get; set; }
-	public TimeOnly End { get; set; }
+	public TimeSlotDto TimeSlot { get; set; }
 	public string ClinicName { get; set; }
 	public Location ClinicLocation { get; set; }
 	public string DoctorName { get; set; }
 	public string DoctorCategory { get; set; }
 	public string DoctorImage { get; set; }
 	public bool IsOverdue { get; set; }
+}
+
+public struct TimeSlotDto
+{
+	public string Id { get; set; }
+	public TimeOnly StartTime { get; set; }
+	public TimeOnly EndTime { get; set; }
+	public bool IsFree { get; set; }
 }
 
 public struct AppointmentDto

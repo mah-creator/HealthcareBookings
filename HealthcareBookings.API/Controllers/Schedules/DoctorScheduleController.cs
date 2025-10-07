@@ -124,12 +124,3 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 	}
 }
 
-internal struct TimeSlotDto
-{
-	public string Id { get; set; }
-	public TimeOnly StartTime { get; set; }
-	public TimeOnly EndTime { get; set; }
-	public bool IsFree { get; set; }
-
-}
-
