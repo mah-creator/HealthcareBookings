@@ -51,13 +51,24 @@ public class DoctorsController(
 		if (!string.IsNullOrEmpty(categoryId) && !string.IsNullOrWhiteSpace(categoryId))
 			doctors = doctors.Where(d => d.CategoryID == categoryId);
 
+		foreach (var item in doctors)
+		{
+			Console.WriteLine(item);
+		}
+
 		var doctorDtos = doctors.Select(d => CreateDoctorDto(d, patient));
 
-		return
-			Ok(
-				PagedList<DoctorDto>
-				.CreatePagedList(doctorDtos, query.Page, query.PageSize)
-			);
+		foreach (var item in doctorDtos)
+		{
+			Console.WriteLine(item);
+		}
+
+		return Ok();
+		//return
+		//	Ok(
+		//		PagedList<DoctorDto>
+		//		.CreatePagedList(doctorDtos, query.Page, query.PageSize)
+		//	);
 	}
 
 	[HttpGet("{categoryId}")]

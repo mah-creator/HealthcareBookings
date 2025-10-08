@@ -22,6 +22,15 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 	{
 		base.OnModelCreating(modelBuilder);
 
+		
+
+		modelBuilder.Entity<ProfileInformation>()
+		.Property(p => p.DOB)
+		.HasConversion(
+			v => v.ToString("yyyy-MM-dd"),
+			v => string.IsNullOrWhiteSpace(v) ? DateOnly.MinValue : DateOnly.Parse(v)
+		);
+
 		modelBuilder.Entity<Banner>()
 			.HasKey(b => b.Id);
 

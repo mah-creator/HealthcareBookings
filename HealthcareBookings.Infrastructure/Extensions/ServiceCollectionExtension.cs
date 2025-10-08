@@ -17,6 +17,7 @@ public static class ServiceCollectionExtension
 		{
 			options.UseSqlite(configuration.GetConnectionString("Sqlite"));
 			options.EnableSensitiveDataLogging();
+			options.EnableDetailedErrors();
 		});
 
 		services.AddScoped<IAppSeeder, AppSeeder>();
