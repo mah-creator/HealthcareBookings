@@ -3,6 +3,8 @@ using HealthcareBookings.Application.Patients.Ectensions;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Domain.Constants;
 using HealthcareBookings.Domain.Entities;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +26,23 @@ public class CustomeIdentityEndpoints(
 	UserManager<User> userManager,
 	IAppDbContext dbContext) : ControllerBase
 {
+	[Authorize]
+	[HttpPost("logout")]
+	public async Task<IActionResult> Logout()
+	{
+		var user = await userManager.GetUserAsync(User);
+		if (user == null)
+			return Unauthorized();
+
+		await userManager.UpdateSecurityStampAsync(user);
+		var tokenName = User.FindFirstValue("token_name");
+
+		await userManager.RemoveAuthenticationTokenAsync(user, IdentityConstants.BearerScheme, tokenName);
+
+		return Ok(new { title = "Logged out successfully" });
+	}
+
+
 	[HttpPost("login")]
 	public async Task<IActionResult> Login([FromBody] LoginRequest login)
 	{
@@ -38,7 +57,11 @@ public class CustomeIdentityEndpoints(
 
 		var roles = await userManager.GetRolesAsync(user);
 
-		var token = GenerateJwtToken(user, roles);
+		var tokenName = Guid.NewGuid().ToString();
+
+		var token = await GenerateJwtToken(user, roles, tokenName);
+
+		await userManager.SetAuthenticationTokenAsync(user, signInManager.AuthenticationScheme, tokenName, token);
 
 		if (roles.FirstOrDefault()?.Equals(UserRoles.Patient)?? false)
 		{
@@ -60,16 +83,20 @@ public class CustomeIdentityEndpoints(
 			role = roles.FirstOrDefault(),
 		});
 	}
-
-		 private string GenerateJwtToken(IdentityUser user, IList<string> roles)
+	private async Task<string> GenerateJwtToken(User user, IList<string> roles, string tokenName)
 	{
 		var allClaims = new List<Claim>
 		{
 			new Claim(JwtRegisteredClaimNames.Sub, user.Id),
 			new Claim(JwtRegisteredClaimNames.Email, user.Email),
+			new Claim("token_name", tokenName)
 		};
 		
 		allClaims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+		var securityStamp = await userManager.GetSecurityStampAsync(user);
+		allClaims.Add(new Claim("stamp", securityStamp));
+
 
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
 		var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

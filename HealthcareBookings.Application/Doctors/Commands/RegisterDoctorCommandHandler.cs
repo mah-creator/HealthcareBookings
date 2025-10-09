@@ -50,7 +50,7 @@ public class RegisterDoctorCommandHandler(
 		{
 			DoctorUID = newUser.Id,
 			CategoryID = category!.CategoryID,
-			ClinicID = clinic!.ClinicID
+			ClinicID = clinic!.ClinicID,
 		};
 
 		await dbContext.SaveChangesAsync(cancellationToken);

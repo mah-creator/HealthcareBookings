@@ -80,8 +80,12 @@ public class DoctorsController(
 	public async Task<IActionResult> GetDoctorById(string doctorId)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var doctor = dbContext.Doctors.Include(d => d.Appointments).ThenInclude(a => a.Review).FirstOrDefault(d => d.DoctorUID == doctorId);
-		if (doctor == null)
+		var doctor = dbContext.Doctors
+			.Include(d => d.Appointments).ThenInclude(a => a.Review)
+			.Include(d => d.Account).ThenInclude(a => a.Profile)
+			.FirstOrDefault(d => d.DoctorUID == doctorId);
+
+		if (doctor?.Account?.Profile == null)
 			throw new InvalidHttpActionException("Doctor wasn't found");
 
 		return Ok(CreateDoctorDto(doctor, patient));

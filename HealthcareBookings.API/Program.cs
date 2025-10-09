@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http.Json;
 using System.Text.Json.Serialization;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using HealthcareBookings.Application.Middlewares;
+using Microsoft.AspNetCore.Authorization;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,8 @@ builder.Services.AddScoped<IConfigurationManager, ConfigurationManager>();
 builder.Services.AddInfrastucture(builder.Configuration);
 builder.Services.AddApplication();
 builder.AddPresentation();
+
+builder.Services.AddLogging();
 
 builder.Services.AddIdentityApiEndpoints<User>()
     .AddRoles<IdentityRole>()
@@ -56,11 +60,21 @@ app.MapGroup("api/identity")
     .WithTags("Identity")
     .MapCustomIdentityApi<User>();
 
+app.UseAuthentication();
+
+
 app.UseStaticFiles();
 
 app.UseAuthorization();
 
 app.UseMiddleware<ExceptionHandlingMiddleawre>();
+
+app.UseWhen(context =>
+{
+    var endpoint = context.GetEndpoint();
+    return endpoint?.Metadata.GetMetadata<IAuthorizeData>() != null;
+}, appBuilder => appBuilder.UseMiddleware<PersistedTokenValidatorMiddleware>());
+    
 
 app.MapControllers();
 
