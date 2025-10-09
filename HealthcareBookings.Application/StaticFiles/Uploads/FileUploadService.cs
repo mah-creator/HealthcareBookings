@@ -10,7 +10,7 @@ public class FileUploadService(IWebHostEnvironment environment)
 	public async Task<string> UploadWebAsset(IFormFile staticFile)
 	{
 		var relativePath =
-				$"images/uploads/{Guid.NewGuid().ToString()}_{staticFile.FileName}";
+				$"/images/uploads/{Guid.NewGuid().ToString()}_{staticFile.FileName}";
 
 		var absolutePath = Path.Combine(
 			environment.WebRootPath,
