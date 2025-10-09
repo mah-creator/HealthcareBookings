@@ -1,6 +1,7 @@
 ﻿using HealthcareBookings.Application.Constants;
 using HealthcareBookings.Application.Patients.Commands.Profile;
 using HealthcareBookings.Application.Patients.Queries;
+using HealthcareBookings.Application.StaticFiles.Defaults;
 using HealthcareBookings.Application.Users;
 using HealthcareBookings.Application.Validators;
 using HealthcareBookings.Domain.Constants;
@@ -19,6 +20,7 @@ namespace HealthcareBookings.API.Controllers.Profile;
 [Route("/api/profile/patient")]
 [Authorize(Roles = UserRoles.Patient)]
 public class PatientProfileController(IMediator mediator,
+	DefaultProfileImageService profileImageService,
 	CurrentUserEntityService currentUserEntityService,
 	AppDbContext dbContext) : ControllerBase
 {
@@ -48,12 +50,6 @@ public class PatientProfileController(IMediator mediator,
 	public async Task<IActionResult> GetPatientProfile()
 	{
 		var profile = currentUserEntityService.GetCurrentPatient().Result.Profile;
-		var patient = currentUserEntityService.GetCurrentPatient().Result.PatientProperties;
-
-		if (profile is null || patient is null)
-		{
-			throw new InvalidHttpActionException("Your patient profile wasn't set up correctly");
-		}
 
 		return Ok(createPatientProfileDto(profile));
 	}
@@ -76,14 +72,14 @@ public class PatientProfileController(IMediator mediator,
 
 		return Ok(createPatientProfileDto(profile));
 	}
-	private GetPatientProfileQuery createPatientProfileDto(ProfileInformation profile)
+	private GetPatientProfileQuery createPatientProfileDto(ProfileInformation? profile)
 	{
 		return new GetPatientProfileQuery
 		{
-			Name = profile.Name ?? UserRoles.Patient,
-			DateOfBirth = profile.DOB,
-			Gender = profile.Gender,
-			ProfileImagePath = ApiSettings.BaseUrl + profile.ProfileImagePath
+			Name = profile?.Name ?? UserRoles.Patient,
+			DateOfBirth = profile?.DOB,
+			Gender = profile?.Gender ?? Gender.Male,
+			ProfileImagePath = ApiSettings.BaseUrl + (profile?.ProfileImagePath ?? profileImageService.GetDefaultProfileImage(UserRoles.Patient))
 		};
 	}
 }

@@ -6,7 +6,7 @@ namespace HealthcareBookings.Application.Patients.Queries;
 public class GetPatientProfileQuery
 {
 	public string Name { get; set; }
-	public DateOnly DateOfBirth { get; set; }
+	public DateOnly? DateOfBirth { get; set; }
 	public string Gender { get; set; }
 	public  IEnumerable<LocationDto> Locations { get; set; }
 	public string ProfileImagePath { get; set; }

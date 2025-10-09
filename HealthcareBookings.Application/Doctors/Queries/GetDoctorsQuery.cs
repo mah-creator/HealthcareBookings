@@ -31,4 +31,5 @@ public struct DoctorDto
 	public int Experience { get; set; }
 	public int PatientCount { get; set; }
 	public string Bio { get; set; }
+	public string ClosestAvailability { get; set; }
 }

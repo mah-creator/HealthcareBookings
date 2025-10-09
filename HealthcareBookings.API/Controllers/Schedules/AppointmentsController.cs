@@ -135,7 +135,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				DoctorName = a.Doctor.Account.Profile.Name,
 				DoctorCategory = a.Doctor.Category.CategoryName,
 				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
-				Doctor = CreateDoctorDto(a.Doctor, patient),
+				Doctor = CreateDoctorDto(a.Doctor, patient, dbContext),
 				IsOverdue = isOverdue(a)
 			}).OrderBy(a => new DateTime(a.Date, a.TimeSlot.StartTime)).AsQueryable();
 
@@ -279,7 +279,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			},
 			ClinicName = doctor.Clinic.ClinicName,
 			ClinicLocation = doctor.Clinic.Location,
-			Doctor = CreateDoctorDto(doctor, patient),
+			Doctor = CreateDoctorDto(doctor, patient, dbContext),
 			DoctorName = doctor.Account.Profile.Name,
 			DoctorImage = ApiSettings.BaseUrl + doctor.Account.Profile.ProfileImagePath,
 			DoctorCategory = doctor.Category.CategoryName,

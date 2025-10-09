@@ -33,7 +33,7 @@ public class DoctorsController(
 	public async Task<IActionResult> GetDoctors(GetDoctorsQuery query)
 	{
 		var doctors = await mediator.Send(query);
-		var doctorDtos = doctors.Select(d => CreateDoctorDto(d, patient));
+		var doctorDtos = doctors.Select(d => CreateDoctorDto(d, patient, dbContext));
 
 		return 
 			Ok( 
@@ -51,7 +51,7 @@ public class DoctorsController(
 		if (!string.IsNullOrEmpty(categoryId) && !string.IsNullOrWhiteSpace(categoryId))
 			doctors = doctors.Where(d => d.CategoryID == categoryId);
 
-		var doctorDtos = doctors.Select(d => CreateDoctorDto(d, patient));
+		var doctorDtos = doctors.Select(d => CreateDoctorDto(d, patient, dbContext));
 
 		return
 			Ok(
@@ -67,7 +67,7 @@ public class DoctorsController(
 		var doctors = await mediator.Send(query);
 		var doctorDtosByCategory = doctors
 			.Where(d => d.CategoryID == categoryId)
-			.Select(d => CreateDoctorDto(d, patient));
+			.Select(d => CreateDoctorDto(d, patient, dbContext));
 
 		return Ok(
 				PagedList<DoctorDto>
@@ -83,11 +83,12 @@ public class DoctorsController(
 		var doctor = dbContext.Doctors
 			.Include(d => d.Appointments).ThenInclude(a => a.Review)
 			.Include(d => d.Account).ThenInclude(a => a.Profile)
+			.Include(d => d.Clinic)
 			.FirstOrDefault(d => d.DoctorUID == doctorId);
 
 		if (doctor?.Account?.Profile == null)
 			throw new InvalidHttpActionException("Doctor wasn't found");
 
-		return Ok(CreateDoctorDto(doctor, patient));
+		return Ok(CreateDoctorDto(doctor, patient, dbContext));
 	}
 }
