@@ -1,6 +1,7 @@
 ﻿using HealthcareBookings.Application.Constants;
 using HealthcareBookings.Application.Doctors.Queries;
 using HealthcareBookings.Domain.Entities;
+using static HealthcareBookings.Application.Clinics.Utils;
 
 namespace HealthcareBookings.Application.Doctors;
 
@@ -14,6 +15,7 @@ public static class Utils
 			Name = d.Account?.Profile?.Name,
 			Image = ApiSettings.BaseUrl + d.Account?.Profile?.ProfileImagePath,
 			IsFavorite = patient.PatientProperties?.FavoriteDoctors?.Find(fd => fd.DoctorID == d.DoctorUID) is not null,
+			Clinic = CreateClinicDto(d.Clinic, null, null, null),
 			ClinicName = d.Clinic?.ClinicName,
 			ClinicLocation = d.Clinic?.Location?.ToString(),
 			Rating = d.Rating,

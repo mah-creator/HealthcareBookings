@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Application.Paging;
+﻿using HealthcareBookings.Application.Clinics;
+using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Domain.Entities;
 using MediatR;
 using System.ComponentModel.DataAnnotations;
@@ -22,6 +23,7 @@ public struct DoctorDto
 	public string Name { get; set; }
 	public string Image { get; set; }
 	public bool IsFavorite { get; set; }
+	public ClinicDto Clinic { get; set; }
 	public string ClinicName { get; set; }
 	public string ClinicLocation { get; set; }
 	public float Rating { get; set; }
