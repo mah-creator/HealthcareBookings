@@ -20,7 +20,8 @@ public class GetDoctorsQueryHandler(
 	public async Task<IQueryable<Doctor>> Handle(GetDoctorsQuery request, CancellationToken cancellationToken)
 	{
 
-		var doctorssQuery = dbContext.Doctors.IncludeAll().AsQueryable();
+		var doctorssQuery = dbContext.Doctors.IncludeAll().AsEnumerable()
+			.Where(d => profileCompleted(d)).AsQueryable();
 
 		Expression<Func<Doctor, object>> sortColumntSelector = request.SortColumn switch
 		{
@@ -45,4 +46,6 @@ public class GetDoctorsQueryHandler(
 
 		return doctorssQuery;
 	}
+
+	private bool profileCompleted(Doctor d) => d?.Account?.Profile != null;
 }

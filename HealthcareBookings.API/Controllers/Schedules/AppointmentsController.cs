@@ -1,6 +1,7 @@
 ﻿using HealthcareBookings.Application.Constants;
 using HealthcareBookings.Application.Data;
 using HealthcareBookings.Application.Doctors.Extensions;
+using HealthcareBookings.Application.Doctors.Queries;
 using HealthcareBookings.Application.Extensions;
 using HealthcareBookings.Application.Paging;
 using HealthcareBookings.Application.Users;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using static HealthcareBookings.Application.Utils.ScheduleUtils;
+using static HealthcareBookings.Application.Doctors.Utils;
 
 namespace HealthcareBookings.API.Controllers.Schedules;
 
@@ -112,7 +114,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
 		var appointments = patient?.PatientProperties?.Appointments
-			?.Where(a => 
+			?.Where(a =>
 				a.Status.Equals(appointmentStatus, StringComparison.OrdinalIgnoreCase))
 			.AsEnumerable()
 			.Where(a => !isOverdue(a))
@@ -133,6 +135,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 				DoctorName = a.Doctor.Account.Profile.Name,
 				DoctorCategory = a.Doctor.Category.CategoryName,
 				DoctorImage = ApiSettings.BaseUrl + a.Doctor.Account.Profile.ProfileImagePath,
+				Doctor = CreateDoctorDto(a.Doctor, patient, dbContext),
 				IsOverdue = isOverdue(a)
 			}).OrderBy(a => new DateTime(a.Date, a.TimeSlot.StartTime)).AsQueryable();
 
@@ -276,9 +279,11 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 			},
 			ClinicName = doctor.Clinic.ClinicName,
 			ClinicLocation = doctor.Clinic.Location,
+			Doctor = CreateDoctorDto(doctor, patient, dbContext),
 			DoctorName = doctor.Account.Profile.Name,
 			DoctorImage = ApiSettings.BaseUrl + doctor.Account.Profile.ProfileImagePath,
-			DoctorCategory = doctor.Category.CategoryName
+			DoctorCategory = doctor.Category.CategoryName,
+			IsOverdue = false
 		};
 
 		return true; 
@@ -304,6 +309,7 @@ internal struct PatientAppointmentDto
 	public TimeSlotDto TimeSlot { get; set; }
 	public string ClinicName { get; set; }
 	public Location ClinicLocation { get; set; }
+	public DoctorDto Doctor { get; set; }
 	public string DoctorName { get; set; }
 	public string DoctorCategory { get; set; }
 	public string DoctorImage { get; set; }

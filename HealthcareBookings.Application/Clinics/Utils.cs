@@ -6,7 +6,7 @@ namespace HealthcareBookings.Application.Clinics;
 
 public static class Utils
 {
-	public static ClinicDto CreateClinicDto(Clinic c, User patient, float? latitude, float? longitude)
+	public static ClinicDto CreateClinicDto(Clinic c, User? patient, float? latitude, float? longitude)
 	{
 		var distance = DistanceKm(c.Location.Latitude, c.Location.Longitude, ((double?)latitude), ((double?)longitude));
 		int? travelTime = ((int?) distance) * 60 / 4;
@@ -20,7 +20,7 @@ public static class Utils
 			RatingCount = c.RatingCount,
 			Location = c.Location,
 			Category = c.Category,
-			IsFavorite = patient.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == c.ClinicID) is not null,
+			IsFavorite = patient?.PatientProperties.FavoriteClinics.Find(fc => fc.ClinicID == c.ClinicID) is not null,
 			DestanceKm = distance,
 			Distance = distance == null ? null :
 				(distance >= 1 ? string.Format("{0:F1} Km", distance) : string.Format("{0:D} m", (int?)(distance * 1000)))

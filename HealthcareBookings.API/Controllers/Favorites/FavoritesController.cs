@@ -115,7 +115,7 @@ public class FavoritesController(
 	public async Task<IActionResult> GetFavoriteDoctors(int page, int pageSize)
 	{
 		var patient = await currentUserEntityService.GetCurrentPatient();
-		var favoriteDoctors = patient.PatientProperties?.FavoriteDoctors?.Select(d => CreateDoctorDto(d.Doctor, patient))
+		var favoriteDoctors = patient.PatientProperties?.FavoriteDoctors?.Select(d => CreateDoctorDto(d.Doctor, patient, dbContext))
 		.AsQueryable(); ;
 
 		return Ok(PagedList<DoctorDto>.CreatePagedList(favoriteDoctors, page, pageSize));
