@@ -293,11 +293,11 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			_ when request.EndTime == default
 				=> (false, "End time is required"),
 
-			_ when request.EndTime - request.StartTime > TimeSpan.FromHours(8)
-				=> (false, "Working hours can't exceed 8 hours"),
-
 			_ when request.EndTime <= request.StartTime
 				=> (false, "End time must be after start time"),
+
+			_ when request.EndTime - request.StartTime > TimeSpan.FromHours(8)
+				=> (false, "Working hours can't exceed 8 hours"),
 
 			_ when request.SlotSize < 10 || request.SlotSize > 40
 				=> (false, "Slot size must be between 10 and 40 minutes"),
