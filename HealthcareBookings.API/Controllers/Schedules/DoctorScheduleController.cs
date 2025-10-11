@@ -126,31 +126,44 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 		return TypedResults.Ok();
 	}
 
-	[HttpPost("{doctorId}/batch-schedule")]
-	//[Authorize(Roles = UserRoles.ClinicAdmin)]
-	public async Task CreateBatchSchedule(
-		string doctorId,
-		[FromQuery] BatchScheduleRequest request)
+	[HttpPost("{doctorId}/batchCreate")]
+	[Authorize(Roles = UserRoles.ClinicAdmin)]
+	public async Task CreateBatchSchedule(string doctorId, [FromQuery] BatchScheduleRequest request)
 	{
-		var requestValidatioResult = ValidateBatchScheduleRequest(request, out string? message);
-		if (requestValidatioResult is false)
+		// Validate request
+		if (!ValidateBatchScheduleRequest(request, out string? message))
 			throw new InvalidHttpActionException(message!);
 
-		if (!dbContext.Doctors.Any(d => d.DoctorUID == doctorId))
+		// Verify doctor exists
+		if (!await dbContext.Doctors.AnyAsync(d => d.DoctorUID == doctorId))
 			throw new InvalidHttpActionException("Doctor wasn't found");
 
-		List<Schedule> schedules = [];
-		List<TimeSlot> timeSlots = [];
-		for (DateOnly date = request.FirstDay; date <= request.LastDay; date = date.AddDays(1))
+		// Get the range of dates once
+		var start = request.FirstDay;
+		var end = request.LastDay;
+
+		// 🧩 Load ALL existing schedules for this doctor in one go
+		var existingSchedules = await dbContext.DoctorSchedules
+			.Include(ds => ds.TimeSlots)
+			.AsNoTracking()
+			.Where(ds => ds.DoctorID == doctorId && ds.Date >= start && ds.Date <= end)
+			.ToListAsync();
+
+		// Make lookup by date for faster access
+		var scheduleLookup = existingSchedules.ToDictionary(ds => ds.Date, ds => ds);
+
+		var newSchedules = new List<Schedule>();
+		var newTimeSlots = new List<TimeSlot>();
+
+		// 🔁 Iterate dates in memory
+		for (var date = start; date <= end; date = date.AddDays(1))
 		{
-			List<TimeSlot> slots = [];
-			var schedInDb = dbContext.DoctorSchedules.Include(ds => ds.TimeSlots)
-				.AsNoTracking()
-				.Where(ds => ds.Date == date).FirstOrDefault();
-			var schedSlots = schedInDb?.TimeSlots;
+			var schedExists = scheduleLookup.TryGetValue(date, out var schedInDb);
+			var schedId = schedExists ? schedInDb!.ScheduleID : Guid.NewGuid().ToString();
+			var existingSlots = schedInDb?.TimeSlots ?? new List<TimeSlot>();
 
-			(string schedId, bool schedExists) = schedInDb != null? (schedInDb.ScheduleID, true) : (Guid.NewGuid().ToString(), false);
-
+			// Generate the day's time slots
+			var slots = new List<TimeSlot>();
 			for (var time = request.StartTime; time < request.EndTime; time = time.AddMinutes(request.SlotSize))
 			{
 				slots.Add(new TimeSlot
@@ -160,19 +173,18 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 					EndTime = time.AddMinutes(request.SlotSize)
 				});
 			}
-			
-			// if sched is new or has no time slots, keep all generated time slots
-			if (schedSlots is null)
-				timeSlots.AddRange(slots);
-			// otherwise filter out slots that overlap with existing slots
-			else
-				timeSlots.AddRange(slots.Where(ts1 =>
-					!schedSlots.Any(ts2 => IsOverlap(ts2.StartTime, ts2.EndTime, ts1.StartTime, ts1.EndTime))));
 
-			// if schedule doesn't exist, create a db entry for it
+			// Filter out overlapping ones
+			var nonOverlapping = slots
+				.Where(ts1 => !existingSlots.Any(ts2 => IsOverlap(ts2.StartTime, ts2.EndTime, ts1.StartTime, ts1.EndTime)))
+				.ToList();
+
+			newTimeSlots.AddRange(nonOverlapping);
+
+			// Add schedule if it doesn’t exist
 			if (!schedExists)
 			{
-				schedules.Add(new Schedule
+				newSchedules.Add(new Schedule
 				{
 					ScheduleID = schedId,
 					DoctorID = doctorId,
@@ -181,14 +193,78 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			}
 		}
 
-		dbContext.DoctorSchedules.AddRange(schedules);
+		// ⚙️ Persist
+		if (newSchedules.Count > 0)
+			dbContext.BulkInsert2(newSchedules);
 
-		dbContext.BulkInsert2(schedules);
-
-		dbContext.DoctorTimeSlots.AddRange(timeSlots);
-
-		dbContext.BulkInsert2(timeSlots);
+		if (newTimeSlots.Count > 0)
+			dbContext.BulkInsert2(newTimeSlots);
 	}
+
+
+	//[HttpPost("{doctorId}/batch-schedule")]
+	////[Authorize(Roles = UserRoles.ClinicAdmin)]
+	//public async Task CreateBatchSchedule(
+	//	string doctorId,
+	//	[FromQuery] BatchScheduleRequest request)
+	//{
+	//	var requestValidatioResult = ValidateBatchScheduleRequest(request, out string? message);
+	//	if (requestValidatioResult is false)
+	//		throw new InvalidHttpActionException(message!);
+
+	//	if (!dbContext.Doctors.Any(d => d.DoctorUID == doctorId))
+	//		throw new InvalidHttpActionException("Doctor wasn't found");
+
+	//	List<Schedule> schedules = [];
+	//	List<TimeSlot> timeSlots = [];
+	//	for (DateOnly date = request.FirstDay; date <= request.LastDay; date = date.AddDays(1))
+	//	{
+	//		List<TimeSlot> slots = [];
+	//		var schedInDb = dbContext.DoctorSchedules.Include(ds => ds.TimeSlots)
+	//			.AsNoTracking()
+	//			.Where(ds => ds.Date == date).FirstOrDefault();
+	//		var schedSlots = schedInDb?.TimeSlots;
+
+	//		(string schedId, bool schedExists) = schedInDb != null? (schedInDb.ScheduleID, true) : (Guid.NewGuid().ToString(), false);
+
+	//		for (var time = request.StartTime; time < request.EndTime; time = time.AddMinutes(request.SlotSize))
+	//		{
+	//			slots.Add(new TimeSlot
+	//			{
+	//				ScheduleID = schedId,
+	//				StartTime = time,
+	//				EndTime = time.AddMinutes(request.SlotSize)
+	//			});
+	//		}
+
+	//		// if sched is new or has no time slots, keep all generated time slots
+	//		if (schedSlots is null)
+	//			timeSlots.AddRange(slots);
+	//		// otherwise filter out slots that overlap with existing slots
+	//		else
+	//			timeSlots.AddRange(slots.Where(ts1 =>
+	//				!schedSlots.Any(ts2 => IsOverlap(ts2.StartTime, ts2.EndTime, ts1.StartTime, ts1.EndTime))));
+
+	//		// if schedule doesn't exist, create a db entry for it
+	//		if (!schedExists)
+	//		{
+	//			schedules.Add(new Schedule
+	//			{
+	//				ScheduleID = schedId,
+	//				DoctorID = doctorId,
+	//				Date = date
+	//			});
+	//		}
+	//	}
+
+	//	dbContext.DoctorSchedules.AddRange(schedules);
+
+	//	dbContext.BulkInsert2(schedules);
+
+	//	dbContext.DoctorTimeSlots.AddRange(timeSlots);
+
+	//	dbContext.BulkInsert2(timeSlots);
+	//}
 	static bool ValidateBatchScheduleRequest(BatchScheduleRequest? request, out string? message)
 	{
 		(bool isValid, string? msg) result = request switch
@@ -216,6 +292,9 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 			_ when request.EndTime == default
 				=> (false, "End time is required"),
+
+			_ when request.StartTime - request.EndTime > TimeSpan.FromHours(8)
+				=> (false, "Working hours can't exceed 8 hours"),
 
 			_ when request.EndTime <= request.StartTime
 				=> (false, "End time must be after start time"),
