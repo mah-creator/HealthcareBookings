@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Terms &amp; Conditions — Healthcare Booking System</title>
+  <style>
+    :root{
+      --maxw:900px;
+      --accent:#0b6bd6;
+      --muted:#666;
+      --bg:#f7f9fc;
+      --card:#ffffff;
+    }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; background:var(--bg); color:#111; padding:28px;}
+    .page{max-width:var(--maxw); margin:0 auto; background:var(--card); border-radius:12px; box-shadow:0 6px 30px rgba(20,30,60,0.08); padding:32px;}
+    h1{margin:0 0 8px; color:var(--accent);}
+    p.lead{color:var(--muted); margin-top:0;}
+    h2{margin-top:26px; color:#0b3f7a;}
+    section{margin-top:12px; line-height:1.6;}
+    ul{margin:8px 0 8px 20px;}
+    code{background:#eef6ff;padding:2px 6px;border-radius:6px;font-family:monospace;}
+    footer{margin-top:28px;padding-top:12px;border-top:1px solid #eee;color:var(--muted);font-size:13px;}
+    .muted{color:var(--muted);}
+    .small{font-size:13px;}
+  </style>
+</head>
+<body>
+  <div class="page" role="main">
+    <header>
+      <h1>Terms &amp; Conditions</h1>
+      <p class="lead">These Terms &amp; Conditions ("Terms") govern your access to and use of the Healthcare Booking System (the "Service").</p>
+      <p class="muted small">Prepared using the Software Requirements Specification for Healthcare Booking System (Version 1.0) by Mahmoud Tahrawi, 13/8/2025. :contentReference[oaicite:0]{index=0}</p>
+    </header>
+
+    <section>
+      <h2>1. Acceptance</h2>
+      <p>By creating an account, using, or accessing the Service (website or mobile app), you agree to these Terms. If you do not agree, do not use the Service.</p>
+    </section>
+
+    <section>
+      <h2>2. Definitions</h2>
+      <ul>
+        <li><strong>Patient</strong> — an end user seeking appointments.</li>
+        <li><strong>Clinic Admin</strong> — an admin user managing a clinic/facility on the platform.</li>
+        <li><strong>Doctor</strong> — a healthcare professional whose availability is shown on the platform.</li>
+        <li><strong>Appointment Request</strong> — a booking request submitted by a Patient (may be Pending or Approved).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. Accounts &amp; Identity</h2>
+      <p>To use features that create, modify or view appointments you must register and maintain an account. You are responsible for keeping your account credentials secure and for all activity that occurs under your account. The Service (API component) requires identity verification before allowing access to critical endpoints, as described in the SRS. :contentReference[oaicite:1]{index=1}</p>
+    </section>
+
+    <section>
+      <h2>4. Booking, Approval &amp; Business Rules</h2>
+      <p>The following booking rules are incorporated from the SRS and apply to all Patients and Clinic Admins:</p>
+      <ul>
+        <li><strong>Advance booking window:</strong> Patients may request an appointment up to 24 hours before the appointment start time. (SRS: Patient-1). :contentReference[oaicite:2]{index=2}</li>
+        <li><strong>Cancellation policy:</strong> Patients are allowed to cancel an upcoming appointment only if the cancellation is made at least 24 hours before the appointment start time. Cancellations violating this rule will be rejected. (SRS: Patient-2). :contentReference[oaicite:3]{index=3}</li>
+        <li><strong>Consecutive booking restriction:</strong> A Patient may not book two appointments with the same doctor within a 3-day window (no two consecutive bookings within ±3 days). (SRS: Patient-3). :contentReference[oaicite:4]{index=4}</li>
+        <li><strong>Admin schedule changes:</strong> Clinic Admins are prohibited from updating doctor schedules in ways that affect accepted or pending appointment requests. Any schedule update that would alter pending or accepted requests must be disallowed by the system. (SRS: Admin-1). :contentReference[oaicite:5]{index=5}</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Appointment Workflow</h2>
+      <p>When a Patient requests a time slot the system will:</p>
+      <ol>
+        <li>Verify the slot is still free;</li>
+        <li>Verify the request satisfies the business rules above;</li>
+        <li>Create an Appointment Request with status <em>Pending</em> and notify the relevant Clinic Admin and Patient; and</li>
+        <li>The Clinic Admin may then approve or reject the request; once approved the appointment status becomes <em>Approved</em>.</li>
+      </ol>
+      <p>Doctors can view their agenda and mark appointments as completed or update status according to permitted transitions defined by the system. :contentReference[oaicite:6]{index=6}</p>
+    </section>
+
+    <section>
+      <h2>6. User Conduct</h2>
+      <p>Users must not:</p>
+      <ul>
+        <li>Provide false, misleading or fraudulent information;</li>
+        <li>Attempt to access or interfere with other users' accounts;</li>
+        <li>Attempt to circumvent booking constraints or manipulate scheduling data;</li>
+        <li>Use the Service for any unlawful purpose.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>7. Data, Privacy &amp; Notifications</h2>
+      <p>The Service collects and processes personal data necessary to provide appointment and clinic-management features (account data, contact details, appointment history). By using the Service you consent to the collection, processing and storage of your data as necessary to provide the Service. The platform will provide a separate Privacy Policy that explains details about data retention, sharing, and security practices.</p>
+      <p class="small muted">Note: the SRS states the API is the single source for identity and data access for both web and mobile clients. Appropriate authentication and authorization are required before access is granted. :contentReference[oaicite:7]{index=7}</p>
+    </section>
+
+    <section>
+      <h2>8. Intellectual Property</h2>
+      <p>All content delivered by the Service (text, UI, designs, code) is the property of the Service operator or its licensors unless explicitly stated otherwise. Users retain ownership of personal data they provide, subject to the rights necessary for the Service to operate.</p>
+    </section>
+
+    <section>
+      <h2>9. Fees &amp; Payments</h2>
+      <p>Unless otherwise noted, the Service does not charge Patients for account creation or appointment requests. If the platform introduces paid features they will be detailed in a separate billing agreement.</p>
+    </section>
+
+    <section>
+      <h2>10. Disclaimers &amp; Limitation of Liability</h2>
+      <p>The Service provides scheduling tools and does not provide medical advice. While the Service aims to ensure schedule accuracy, we do not guarantee availability, timeliness, or that appointment data is error-free. To the maximum extent permitted by law, the Service and its providers are not liable for indirect, incidental, consequential, special, or punitive damages resulting from use of (or inability to use) the Service.</p>
+    </section>
+
+    <section>
+      <h2>11. Suspension &amp; Termination</h2>
+      <p>The Service reserves the right to suspend or terminate accounts that violate these Terms or that pose a security risk. Users may close their account by following the account deletion process in the app; deletion may not remove all historical records if retention is required for legal or operational reasons.</p>
+    </section>
+
+    <section>
+      <h2>12. Changes to Terms</h2>
+      <p>We may modify these Terms from time to time. We will notify registered users of material changes via the platform or email. Continued use after notice constitutes acceptance of the updated Terms.</p>
+    </section>
+
+    <section>
+      <h2>13. Governing Law &amp; Dispute Resolution</h2>
+      <p>These Terms are governed by the laws of the jurisdiction where the Service operator is established, unless otherwise required by local consumer protection rules. Disputes will first be attempted to be resolved through good-faith negotiation; if unresolved, parties may pursue remedies in the appropriate courts or tribunals.</p>
+    </section>
+
+    <footer>
+      <p class="small muted">These Terms reflect features and constraints described in the Healthcare Booking System Software Requirements Specification (SRS), Version 1.0. For detailed functional requirements, business rules and interface requirements, see the SRS document. :contentReference[oaicite:8]{index=8}</p>
+      <p class="small muted">Last updated: August 13, 2025</p>
+    </footer>
+  </div>
+</body>
+</html>
