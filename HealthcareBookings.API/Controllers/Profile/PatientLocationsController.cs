@@ -142,7 +142,7 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 	}
 
 	[HttpPost("favor/{locationId}")]
-	public async Task<Results<Ok<IEnumerable<LocationDto>>, BadRequest<ProblemDetails>>> FavorLocation(string locationId)
+	public async Task<Results<Ok<LocationDto>, BadRequest<ProblemDetails>>> FavorLocation(string locationId)
 	{
 		var patientLocations = currentUser.GetCurrentPatient().Result?.PatientProperties?.Locations 
 			?? throw new InvalidHttpActionException("No locations were found for you");
@@ -159,12 +159,12 @@ public class PatientLocationsController(CurrentUserEntityService currentUser, IA
 
 		await dbContext.SaveChangesAsync();
 
-		return TypedResults.Ok(patientLocations.Select(l => new LocationDto(l.Location)
+		return TypedResults.Ok(new LocationDto(location.Location)
 		{
-			LocationId = l.ID,
-			LocationName = l.LocationName,
-			IsPrimary = l.IsPrimary
-		}));
+			LocationId = location.ID,
+			LocationName = location.LocationName,
+			IsPrimary = location.IsPrimary
+		});
 	}
 	static bool isValidLong(float longitude, out string? message)
 	{
