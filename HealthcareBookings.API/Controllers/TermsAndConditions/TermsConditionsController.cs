@@ -2,18 +2,19 @@
 
 namespace HealthcareBookings.API.Controllers.TermsAndConditions;
 
-[ApiController]
-public class HtmlController : ControllerBase
+[Controller]
+public class TermsConditionsController : ControllerBase
 {
 	private readonly IWebHostEnvironment _webHostEnvironment;
 
-	public HtmlController(IWebHostEnvironment webHostEnvironment)
+	public TermsConditionsController(IWebHostEnvironment webHostEnvironment)
 	{
 		_webHostEnvironment = webHostEnvironment;
 	}
 
+	[HttpGet]
 	[Route("/terms-and-conditions")]
-	public ContentResult GetStaticHtmlPage()
+	public ContentResult GetTermsAndConditionsHtmlPage()
 	{
 		var filePath = Path.Combine(_webHostEnvironment.WebRootPath, "terms-and-conditions.html");
 		if (!System.IO.File.Exists(filePath))
