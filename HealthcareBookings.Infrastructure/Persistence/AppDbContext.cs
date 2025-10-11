@@ -1,4 +1,5 @@
-﻿using HealthcareBookings.Domain.Entities;
+﻿using Z.EntityFramework.Extensions;
+using HealthcareBookings.Domain.Entities;
 using HealthcareBookings.Application.Data;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ namespace HealthcareBookings.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(options), IAppDbContext
 {
+	
 	public DbSet<User> Users { get; set; }
 	public DbSet<Patient> Patients { get; set; }
 	public DbSet<ClinicAdmin> ClinicAdmins { get; set; }
@@ -188,5 +190,10 @@ public class AppDbContext(DbContextOptions options) : IdentityDbContext<User>(op
 
 		modelBuilder.Entity<Clinic>()
 		   .OwnsOne(c => c.Location);
+	}
+
+	public void BulkInsert2(IEnumerable<object> entities)
+	{
+		this.BulkInsert(entities);
 	}
 }

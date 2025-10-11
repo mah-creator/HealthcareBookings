@@ -19,4 +19,6 @@ public interface IAppDbContext
 	public DbSet<Banner> Banners { get; set; }
 
 	Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+	public int SaveChanges();
+	public void BulkInsert2(IEnumerable<object> entities);
 }

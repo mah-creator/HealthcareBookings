@@ -236,7 +236,7 @@ public class AppointmentsController(IAppDbContext dbContext, CurrentUserEntitySe
 
 		var patient =  currentUserEntityService.GetCurrentPatient().Result;
 		var patientAppointments = patient.PatientProperties.Appointments;
-		if (patientAppointments.Where(a => a.TimeSlot.Schedule.Date == date && a.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase)).Any(a => timeWithin(a.TimeSlot.StartTime, a.TimeSlot.EndTime, time)))
+		if (patientAppointments.Where(a => a.TimeSlot.Schedule.Date == date && a.Status.Equals(AppointmentStatus.Upcoming, StringComparison.OrdinalIgnoreCase)).Any(a => IsOverlap(a.TimeSlot.StartTime, a.TimeSlot.EndTime, timeSlot.StartTime, timeSlot.EndTime)))
 		{
 			message = $"The appointment you requested at {time} overlaps with another appointment";
 			return false;

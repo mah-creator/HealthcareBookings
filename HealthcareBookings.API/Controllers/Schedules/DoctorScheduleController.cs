@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Z.EntityFramework.Extensions;
+using FluentValidation;
 using FluentValidation.Validators;
 using HealthcareBookings.Application.Data;
 using HealthcareBookings.Domain.Constants;
@@ -11,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using static HealthcareBookings.Application.Utils.ScheduleUtils;
+using HealthcareBookings.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace HealthcareBookings.API.Controllers.Schedules;
 
@@ -85,7 +88,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			doctor.Schedules.Add(schedule);
 		}
 
-		var timeSlot = schedule.TimeSlots.Where(s => timeWithin(s.StartTime, s.EndTime, start) || timeWithin(s.StartTime, s.EndTime, end) || (s.StartTime==start && s.EndTime==end))?.FirstOrDefault();
+		var timeSlot = schedule.TimeSlots.Where(s => IsOverlap(s.StartTime, s.EndTime, start, end))?.FirstOrDefault();
 
 		if (timeSlot != null)
 			throw new InvalidHttpActionException($"Doctor already has a schedule entry at {date}, {timeSlot.StartTime} - {timeSlot.EndTime}");
@@ -122,5 +125,120 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 
 		return TypedResults.Ok();
 	}
+
+	[HttpPost("{doctorId}/batch-schedule")]
+	//[Authorize(Roles = UserRoles.ClinicAdmin)]
+	public async Task CreateBatchSchedule(
+		string doctorId,
+		[FromQuery] BatchScheduleRequest request)
+	{
+		var requestValidatioResult = ValidateBatchScheduleRequest(request, out string? message);
+		if (requestValidatioResult is false)
+			throw new InvalidHttpActionException(message!);
+
+		if (!dbContext.Doctors.Any(d => d.DoctorUID == doctorId))
+			throw new InvalidHttpActionException("Doctor wasn't found");
+
+		List<Schedule> schedules = [];
+		List<TimeSlot> timeSlots = [];
+		for (DateOnly date = request.FirstDay; date <= request.LastDay; date = date.AddDays(1))
+		{
+			List<TimeSlot> slots = [];
+			var schedInDb = dbContext.DoctorSchedules.Include(ds => ds.TimeSlots)
+				.AsNoTracking()
+				.Where(ds => ds.Date == date).FirstOrDefault();
+			var schedSlots = schedInDb?.TimeSlots;
+
+			(string schedId, bool schedExists) = schedInDb != null? (schedInDb.ScheduleID, true) : (Guid.NewGuid().ToString(), false);
+
+			for (var time = request.StartTime; time < request.EndTime; time = time.AddMinutes(request.SlotSize))
+			{
+				slots.Add(new TimeSlot
+				{
+					ScheduleID = schedId,
+					StartTime = time,
+					EndTime = time.AddMinutes(request.SlotSize)
+				});
+			}
+			
+			// if sched is new or has no time slots, keep all generated time slots
+			if (schedSlots is null)
+				timeSlots.AddRange(slots);
+			// otherwise filter out slots that overlap with existing slots
+			else
+				timeSlots.AddRange(slots.Where(ts1 =>
+					!schedSlots.Any(ts2 => IsOverlap(ts2.StartTime, ts2.EndTime, ts1.StartTime, ts1.EndTime))));
+
+			// if schedule doesn't exist, create a db entry for it
+			if (!schedExists)
+			{
+				schedules.Add(new Schedule
+				{
+					ScheduleID = schedId,
+					DoctorID = doctorId,
+					Date = date
+				});
+			}
+		}
+
+		dbContext.DoctorSchedules.AddRange(schedules);
+
+		dbContext.BulkInsert2(schedules);
+
+		dbContext.DoctorTimeSlots.AddRange(timeSlots);
+
+		dbContext.BulkInsert2(timeSlots);
+	}
+	static bool ValidateBatchScheduleRequest(BatchScheduleRequest? request, out string? message)
+	{
+		(bool isValid, string? msg) result = request switch
+		{
+			null
+				=> (false, "Invalid schedule request"),
+
+			_ when request.FirstDay == default
+				=> (false, "First day is required"),
+
+			_ when request.LastDay == default
+				=> (false, "Last day is required"),
+
+			_ when request.LastDay < request.FirstDay
+				=> (false, "Last day cannot be before first day"),
+
+			_ when request.LastDay > request.FirstDay.AddMonths(1)
+				=> (false, "The schedule range must not exceed 3 months"),
+
+			_ when request.WorkDays == null || request.WorkDays.Count == 0
+				=> (false, "At least one work day must be provided"),
+
+			_ when request.StartTime == default
+				=> (false, "Start time is required"),
+
+			_ when request.EndTime == default
+				=> (false, "End time is required"),
+
+			_ when request.EndTime <= request.StartTime
+				=> (false, "End time must be after start time"),
+
+			_ when request.SlotSize < 10 || request.SlotSize > 40
+				=> (false, "Slot size must be between 10 and 40 minutes"),
+
+			_ => (true, null)
+		};
+
+		message = result.msg;
+		return result.isValid;
+	}
+
+
 }
 
+public record BatchScheduleRequest
+(
+	DateOnly FirstDay,
+	DateOnly LastDay,
+	List<DayOfWeek> WorkDays,
+	TimeOnly StartTime,
+	TimeOnly EndTime,
+	int SlotSize 
+);
