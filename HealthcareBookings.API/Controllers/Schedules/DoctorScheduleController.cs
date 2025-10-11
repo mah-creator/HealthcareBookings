@@ -293,7 +293,7 @@ public class DoctorScheduleController(IAppDbContext dbContext) : ControllerBase
 			_ when request.EndTime == default
 				=> (false, "End time is required"),
 
-			_ when request.StartTime - request.EndTime > TimeSpan.FromHours(8)
+			_ when request.EndTime - request.StartTime > TimeSpan.FromHours(8)
 				=> (false, "Working hours can't exceed 8 hours"),
 
 			_ when request.EndTime <= request.StartTime
