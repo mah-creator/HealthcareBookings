@@ -12,9 +12,7 @@ public class FileUploadService(IWebHostEnvironment environment)
 		var relativePath =
 				$"/images/uploads/{Guid.NewGuid().ToString()}_{staticFile.FileName}";
 
-		var absolutePath = Path.Combine(
-			environment.WebRootPath,
-			relativePath);
+		var absolutePath = $"{environment.WebRootPath}{Path.DirectorySeparatorChar}{relativePath}";
 
 		var streamWritter = new FileStream(absolutePath, FileMode.OpenOrCreate);
 		await staticFile.CopyToAsync(streamWritter);
